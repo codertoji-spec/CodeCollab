@@ -132,7 +132,7 @@ cd frontend && npm install && npm run dev
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color labels for each user |
 | Edit / View links | Separate room codes — editor or read-only |
-| Code execution | 6 languages via internal Docker sandbox |
+| Code execution | 4 languages via internal Docker sandbox |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Snapshot on lang change | State captured before language reset |
 | Integrated chat | Typing indicators + system messages |
