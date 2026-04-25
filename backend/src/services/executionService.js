@@ -8,9 +8,8 @@ const https = require('https');
 
 const EXEC_TIMEOUT_MS = parseInt(process.env.EXEC_TIMEOUT_MS || '15000', 10);
 
-// Map our lang keys → Wandbox compiler names
 const WANDBOX_COMPILERS = {
-  cpp:        'gcc-head',        // C++20/23, GCC latest
+  cpp:        'gcc-head',
   javascript: 'nodejs-head',
   typescript: 'typescript-5.4.5',
   python:     'cpython-3.12.3',
@@ -20,13 +19,13 @@ const WANDBOX_COMPILERS = {
 };
 
 const WANDBOX_OPTIONS = {
-  cpp: 'warning,c++20',
-  rust: '',
-  java: '',
+  cpp:        'c++20',
+  rust:       '',
+  java:       '',
   javascript: '',
   typescript: '',
-  python: '',
-  go: '',
+  python:     '',
+  go:         '',
 };
 
 function wandboxRequest(payload) {
@@ -70,7 +69,7 @@ async function run({ language, code, stdin = '' }) {
     compiler,
     code,
     stdin: stdin || '',
-    'compiler-option-raw': WANDBOX_OPTIONS[language] || '',
+    options: WANDBOX_OPTIONS[language] || '',
     save: false,
   };
 
@@ -87,8 +86,6 @@ async function run({ language, code, stdin = '' }) {
     };
   }
 
-  // Wandbox response fields:
-  // status, compiler_output, compiler_error, program_output, program_error, signal
   const compilerMessage = [result.compiler_output, result.compiler_error]
     .filter(Boolean).join('\n').trim();
 
