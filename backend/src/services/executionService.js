@@ -6,7 +6,7 @@ const https = require('https');
 
 const EXEC_TIMEOUT_MS = parseInt(process.env.EXEC_TIMEOUT_MS || '15000', 10);
 const CLIENT_ID     = process.env.JDOODLE_CLIENT_ID     || 'd98c07546c906707c837873dacb29390';
-const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET || 'fe9be6191e9abc1cc718729628d0edbd0f0ed0579c266216b4b7d7b0dbf1d31c';
+const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET || 'b782c6a3f88fe8788349d6c3c0189083f3d0e62636e710e136a823c564cdff54';
 
 const LANG_MAP = {
   cpp:        { language: 'cpp17',      versionIndex: '1' },
