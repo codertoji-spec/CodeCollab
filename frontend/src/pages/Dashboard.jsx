@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-const LANGUAGES = ['javascript', 'python', 'java', 'cpp', 'typescript', 'go', 'rust']
+const LANGUAGES = ['javascript', 'python', 'cpp', 'typescript']
 
 const LANG_COLORS = {
   javascript: 'text-yellow-400',
