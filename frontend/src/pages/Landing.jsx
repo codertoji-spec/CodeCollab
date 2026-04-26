@@ -72,7 +72,7 @@ export default function Landing() {
       <div className="px-8 pb-20 max-w-5xl mx-auto w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Feature icon="⚡" title="Real-time Sync" desc="Changes sync across all users in under 100ms via WebSockets. See cursors, selections, and edits live." />
-          <Feature icon="▶️" title="Live Execution" desc="Run code in 7 languages instantly. Output broadcasts to everyone in the room simultaneously." />
+          <Feature icon="▶️" title="Live Execution" desc="Run code in 4 languages instantly. Output broadcasts to everyone in the room simultaneously." />
           <Feature icon="🔗" title="Edit & View Links" desc="Separate editor and viewer access codes. Perfect for demos, code reviews, and pair programming." />
         </div>
       </div>
