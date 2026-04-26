@@ -334,6 +334,29 @@ export default function Room() {
         },
       })
     })
+
+    // ── Slash command: /# <number> then Enter loads snippet ──────────────
+    editor.onKeyDown((e) => {
+      if (e.keyCode !== 3) return
+      const model = editor.getModel()
+      if (!model) return
+      const pos = editor.getPosition()
+      const lineText = model.getLineContent(pos.lineNumber).trim()
+      const match = lineText.match(/^\/#\s*(\d+)$/)
+      if (!match) return
+      const num = parseInt(match[1], 10)
+      const snippet = CPP_SNIPPETS.find(s => s.title.startsWith(num + "."))
+      if (!snippet) return
+      e.preventDefault()
+      e.stopPropagation()
+      setTimeout(() => {
+        const ydoc = ydocRef.current
+        if (ydoc) {
+          const ytext = ydoc.getText('monaco')
+          ydoc.transact(() => { ytext.delete(0, ytext.length); ytext.insert(0, snippet.code) })
+        }
+      }, 0)
+    })
   }, [roomId])
 
   // ── Language change ───────────────────────────────────────────────────────
@@ -445,25 +468,6 @@ export default function Room() {
           >
             {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
-
-          {/* CPP Snippet dropdown — visible only when cpp selected */}
-          {language === 'cpp' && isEditor && (
-            <select
-              className="bg-white/[0.04] border border-white/10 text-slate-100 text-xs px-1 py-1.5 rounded-md backdrop-blur-md focus:outline-none focus:border-yellow-400/70 focus:ring-2 focus:ring-yellow-400/20 transition-all w-7 cursor-pointer"
-              defaultValue=""
-              onChange={e => {
-                if (!e.target.value) return
-                const snippet = CPP_SNIPPETS.find(s => s.title === e.target.value)
-                if (snippet) setYjsCode(snippet.code)
-                e.target.value = ''
-              }}
-            >
-              <option value="" disabled>📋</option>
-              {CPP_SNIPPETS.map(s => (
-                <option key={s.title} value={s.title}>{s.title}</option>
-              ))}
-            </select>
-          )}
 
           {/* Run button */}
           {isEditor && (
