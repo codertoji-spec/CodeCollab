@@ -408,7 +408,7 @@ export default function Room() {
           <div>
             <h1 className="font-semibold text-slate-100 text-sm">{room.name}</h1>
             <span className={`text-xs ${isEditor ? 'text-accent-green' : 'text-accent-yellow'}`}>
-              {isEditor ? '✏️ Editor' : '👁 Viewer'}
+              {isEditor ? 'Editor' : '👁 Viewer'}
             </span>
           </div>
         </div>
