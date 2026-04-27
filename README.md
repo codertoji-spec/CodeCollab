@@ -1,8 +1,10 @@
 # CodeCollab 🚀
 
-Real-time collaborative code editor. Multiple developers edit code simultaneously, see cursors, run code together, and chat — all in the browser.
+Real-time collaborative code editor. Multiple developers edit code simultaneously, see live cursors, chat, and run code — all in the browser.
 
 > VS Code + Google Docs + Online Compiler
+
+**Live Demo:** [code-collab-woad.vercel.app](https://code-collab-woad.vercel.app)
 
 ---
 
@@ -10,118 +12,9 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
-**Execution:** Internal Docker-based sandbox (replaces Wandbox)  
-**Infra:** Docker, Docker Compose, PostgreSQL
-
----
-
-## Quick Start (Docker — Recommended)
-
-### Prerequisites
-- Docker Desktop installed and running
-- Git
-
-### Steps
-
-```bash
-# 1. Clone / extract the project
-cd codecollab
-
-# 2. Build sandbox images for code execution (one-time)
-cd backend/sandbox
-chmod +x build-images.sh
-./build-images.sh
-cd ../..
-
-# 3. Start all services
-docker-compose up --build
-
-# Wait ~30 seconds for all services to start
-
-# 4. Open in browser
-# → Frontend:    http://localhost:5173
-# → Backend API: http://localhost:5000/api/health
-```
-
-DB schema auto-runs on first start.
-
----
-
-## Internal Code Execution (NEW)
-
-Wandbox has been **fully removed**. Code now runs in **isolated Docker sandbox containers** spawned per-request by the backend (Docker-out-of-Docker).
-
-### Flow
-```
-Client → Socket.io → Backend → executionService.js
-       → docker run --rm --network=none ... codecollab-sandbox-<lang>
-       → stdout/stderr captured → execution-result event → Client
-```
-
-### Security hardening (per container)
-| Control | Value |
-|---------|-------|
-| Network | `--network=none` (no internet, no host access) |
-| Memory | `256m` (configurable via `EXEC_MEMORY`) |
-| CPU | `0.5` (configurable via `EXEC_CPUS`) |
-| PIDs | `64` (blocks fork bombs) |
-| Filesystem | `--read-only` + tmpfs `/sandbox` |
-| Timeout | 5s wall-clock (configurable via `EXEC_TIMEOUT_MS`) |
-| Output cap | Truncated at `EXEC_OUTPUT_MAX` bytes |
-| Cleanup | `--rm` auto-removes container on exit |
-| User | Non-root inside container |
-
-### Supported languages
-JavaScript (Node) · TypeScript (tsx) · Python · C++ (g++)
-
-### Files added
-```
-backend/src/services/executionService.js    # spawns docker, captures I/O
-backend/src/services/langConfig.js          # image + compile/run commands per lang
-backend/sandbox/Dockerfile.node
-backend/sandbox/Dockerfile.python
-backend/sandbox/Dockerfile.cpp
-backend/sandbox/build-images.sh
-```
-
-### Files modified
-```
-backend/src/controllers/executeController.js   # Wandbox call removed
-backend/Dockerfile                             # docker-cli installed
-docker-compose.yml                             # mounts /var/run/docker.sock + /tmp
-```
-
-### Environment variables
-```
-EXEC_TIMEOUT_MS=5000
-EXEC_MEMORY=256m
-EXEC_CPUS=0.5
-EXEC_PIDS=64
-EXEC_OUTPUT_MAX=65536
-```
-
-### Testing execution locally
-```bash
-# After build-images.sh + docker-compose up
-curl -X POST http://localhost:5000/api/execute/run \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <JWT>" \
-  -d '{"language":"python","code":"print(2+2)"}'
-# → { "stdout": "4\n", "stderr": "", "exitCode": 0 }
-```
-
-Verified safe against: infinite loops (timeout kills), network access (blocked), fork bombs (PID limit), filesystem writes outside `/sandbox` (read-only rootfs).
-
----
-
-## Manual Setup (No Docker)
-
-Not supported for code execution — the sandbox requires Docker. You can still run the editor/chat/sync without execution:
-
-```bash
-cd backend && npm install && npm start
-cd frontend && npm install && npm run dev
-```
+**Real-time Sync:** Yjs CRDT  
+**Execution:** JDoodle API (C++17, Python, JS, TS, Go, Rust, Java)  
+**Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
 
@@ -130,46 +23,122 @@ cd frontend && npm install && npm run dev
 | Feature | Description |
 |---------|-------------|
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
-| Remote cursors | Live cursors with color labels for each user |
-| Edit / View links | Separate room codes — editor or read-only |
-| Code execution | 4 languages via internal Docker sandbox |
+| Remote cursors | Live cursors with color + username labels |
+| Editor / Viewer roles | Separate room codes — edit or read-only access |
+| Code execution | 7 languages via JDoodle API |
+| CPP Snippets | Type `/# <n>` for hardcoded · `\# <n>` for user-input version |
 | Version history | Manual snapshots + auto-save every 10 min |
-| Snapshot on lang change | State captured before language reset |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
 | Auth | Email/password + Google OAuth, JWT-based |
 
 ---
 
+## CPP Snippet Commands
+
+Type in the editor and press **Enter**:
+
+| Command | Result |
+|---------|--------|
+| `/# 1` | FCFS (hardcoded values) |
+| `\# 1` | FCFS (asks for user input) |
+
+Available snippets (1–19):
+
+```
+1. FCFS          2. SJF           3. PRIORITY      4. RR
+5. SRTF          6. LRTF          7. BANKER        8. PCP
+9. FIFO PAGE    10. LRU PAGE     11. DPP          12. RWP
+13. SSTF        14. FCFS (DISK)  15. C SCAN       16. IMRR
+17. HRNN        18. CSP          19. SBP
+```
+
+---
+
+## Local Setup
+
+```bash
+git clone https://github.com/codertoji-spec/CodeCollab.git
+cd CodeCollab
+```
+
+### Backend
+```bash
+cd backend
+cp .env.example .env   # fill in values
+npm install
+node src/index.js
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Environment Variables
+
+**Backend `.env`:**
+```
+PORT=5000
+DATABASE_URL=postgresql://...
+JWT_SECRET=your_secret
+SESSION_SECRET=your_secret
+CLIENT_URL=http://localhost:5173
+SERVER_URL=http://localhost:5000
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+JDOODLE_CLIENT_ID=...
+JDOODLE_CLIENT_SECRET=...
+```
+
+**Frontend `.env`:**
+```
+VITE_API_URL=http://localhost:5000/api
+VITE_SOCKET_URL=http://localhost:5000
+```
+
+---
+
+## Deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | Vercel | code-collab-woad.vercel.app |
+| Backend | Render | codecollab-gcgs.onrender.com |
+| Database | Supabase | PostgreSQL (connection pooler) |
+
+> **Note:** Code execution uses JDoodle API (200 req/day free tier).  
+> Run button works for all 7 languages in the deployed version.
+
+---
+
 ## Architecture
 
 ```
-Frontend (React/Vite :5173)
-    ↕ HTTP REST      → Backend (Express :5000)
-    ↕ WebSocket      → Socket.io → Broadcast to room
-                     ↓ Yjs CRDT state
-                     PostgreSQL (:5432)
-                     ↓ docker.sock (DooD)
-                     Sandbox containers (per execution)
+Frontend (React/Vite — Vercel)
+    ↕ HTTP REST    → Backend (Express — Render)
+    ↕ WebSocket    → Socket.io → Broadcast to room
+                   ↓ Yjs CRDT state
+                   Supabase PostgreSQL
+                   ↓ JDoodle API
+                   Code execution (7 languages)
 ```
 
-### Real-time sync (Yjs CRDT)
+### Real-time Sync (Yjs CRDT)
 - Server holds one `Y.Doc` per active room in memory
 - Client updates sent as binary `Uint8Array` frames
-- State debounce-persisted to PostgreSQL every 5 s
-- On new join, server sends full state vector (`yjs-init`)
-- Race-safe: concurrent `getOrCreateDoc` calls share one load Promise
+- State persisted to PostgreSQL every 5s
+- On join, server sends full state vector (`yjs-init`)
 
 ### Socket Authentication
-JWT verified on handshake via Socket.io middleware. `userId` and `username` are always read from `socket.verifiedUser` — never trust client payload.
-
-### Auth Middleware Caching
-JWT verified per request; DB lookup cached for `min(JWT TTL, 5 min)`. Max 500 entries.
+JWT verified on handshake. `userId` and `username` always read from `socket.verifiedUser` — client payload never trusted.
 
 ### Version History
 - Manual save / auto-save every 10 min / snapshot on language change
-- Max 100 snapshots per room (oldest pruned in DB transaction)
-- Restore replaces Y.Doc via CRDT transaction → syncs to all peers
+- Max 100 snapshots per room
+- Restore syncs to all peers via CRDT transaction
 
 ---
 
@@ -177,59 +146,44 @@ JWT verified per request; DB lookup cached for `min(JWT TTL, 5 min)`. Max 500 en
 
 | Event | Direction | Description |
 |-------|-----------|-------------|
-| `join-room` | C→S | Join a room with role |
+| `join-room` | C→S | Join room with role |
 | `room-state` | S→C | Initial language + user list |
-| `yjs-init` | S→C | Full Yjs state vector on join |
+| `yjs-init` | S→C | Full Yjs state on join |
 | `yjs-update` | C↔S | Binary CRDT update |
 | `users-update` | S→C | Updated user list |
-| `user-joined` / `user-left` | S→C | Presence events |
-| `language-change` / `language-update` | C↔S | Language switch |
-| `cursor-move` / `cursor-update` / `cursor-remove` | C↔S | Remote cursors |
-| `chat-message` | C↔S | Chat message |
+| `language-change` | C↔S | Language switch |
+| `cursor-move` / `cursor-update` | C↔S | Remote cursors |
+| `chat-message` | C↔S | Chat |
 | `typing` / `typing-update` | C↔S | Typing indicator |
-| `execution-result` | C↔S | Code run output (now from internal sandbox) |
+| `execution-result` | C↔S | Code run output |
 
 ---
 
-## Google OAuth (Optional)
+## Google OAuth Setup
 
 1. [console.cloud.google.com](https://console.cloud.google.com) → new project
 2. OAuth 2.0 Client ID (Web app)
-3. Redirect URI: `http://localhost:5000/api/auth/google/callback`
-4. Put Client ID + Secret in `.env` / `docker-compose.yml`
+3. Authorized redirect URI: `https://codecollab-gcgs.onrender.com/api/auth/google/callback`
+4. Add `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` to backend env
 
 ---
 
 ## Security Notes
-- Socket auth via JWT handshake (not per-event)
-- REST auth middleware caches verified tokens
+- Socket auth via JWT handshake
+- REST auth middleware with token caching
 - Snapshot saves are atomic DB transactions
 - Chat messages sanitized + capped at 500 chars server-side
 - Yjs editor role verified server-side before applying updates
-- **Code execution is fully sandboxed** — see "Internal Code Execution" above
 
 ---
 
 ## Testing
 
 ```bash
-cd backend
-npm test
+cd backend && npm test
 ```
 
 | Suite | What it tests |
 |-------|--------------|
-| `auth.test.js` | Token cache, `invalidateToken`, bad/missing tokens, deleted user |
-| `yjsManager.test.js` | Race condition fix, doc creation, update roundtrip, `encodeState` |
-
----
-
-## Setup recap
-
-```bash
-cp backend/.env.example backend/.env
-./backend/sandbox/build-images.sh
-docker-compose up --build
-```
-
-Never commit `.env`.
+| `auth.test.js` | Token cache, invalidation, bad tokens |
+| `yjsManager.test.js` | Race condition fix, doc creation, update roundtrip |
