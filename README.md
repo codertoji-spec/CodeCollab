@@ -26,32 +26,12 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
 | Code execution | 7 languages via JDoodle API |
-| CPP Snippets | Type `/# <n>` for hardcoded · `\# <n>` for user-input version |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
 | Auth | Email/password + Google OAuth, JWT-based |
 
 ---
-
-## CPP Snippet Commands
-
-Type in the editor and press **Enter**:
-
-| Command | Result |
-|---------|--------|
-| `/# 1` | FCFS (hardcoded values) |
-| `\# 1` | FCFS (asks for user input) |
-
-Available snippets (1–19):
-
-```
-1. FCFS          2. SJF           3. PRIORITY      4. RR
-5. SRTF          6. LRTF          7. BANKER        8. PCP
-9. FIFO PAGE    10. LRU PAGE     11. DPP          12. RWP
-13. SSTF        14. FCFS (DISK)  15. C SCAN       16. IMRR
-17. HRNN        18. CSP          19. SBP
-```
 
 ---
 
