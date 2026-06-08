@@ -35,7 +35,7 @@ export default function Login() {
               {error}
             </div>
           )}
-          
+          <a
             href={`${API}/auth/google`}
             className="btn-secondary w-full flex items-center justify-center gap-2 py-3"
           >
