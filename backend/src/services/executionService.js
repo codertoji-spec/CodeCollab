@@ -11,7 +11,7 @@ const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET || 'b782c6a3f88fe8788349
 const LANG_MAP = {
   cpp:        { language: 'cpp17',      versionIndex: '1' },
   javascript: { language: 'nodejs',     versionIndex: '4' },
-  typescript: { language: 'typescript', versionIndex: '4' },
+  typescript: { language: 'typescript', versionIndex: '1' },
   python:     { language: 'python3',    versionIndex: '4' },
   go:         { language: 'go',         versionIndex: '4' },
   rust:       { language: 'rust',       versionIndex: '4' },
