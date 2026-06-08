@@ -20,8 +20,7 @@ export default function Landing() {
           <span className="font-semibold text-lg tracking-tight">CodeCollab</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/login" className="btn-secondary text-sm px-4 py-2">Sign In</Link>
-          <Link to="/register" className="btn-primary text-sm px-4 py-2">Get Started</Link>
+          <Link to="/login" className="btn-primary text-sm px-4 py-2">Sign In</Link>
         </div>
       </nav>
 
@@ -45,11 +44,8 @@ export default function Landing() {
         </p>
 
         <div className="flex items-center gap-4 flex-wrap justify-center">
-          <Link to="/register" className="btn-primary px-8 py-3 text-base glow">
+          <Link to="/login" className="btn-primary px-8 py-3 text-base glow">
             Start Coding Free →
-          </Link>
-          <Link to="/login" className="btn-secondary px-8 py-3 text-base">
-            Sign In
           </Link>
         </div>
 
