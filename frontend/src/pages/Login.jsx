@@ -1,30 +1,11 @@
-import { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export default function Login() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
   const [params] = useSearchParams()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState(params.get('error') ? 'Google sign-in failed. Try again.' : '')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      await login(form.email, form.password)
-      navigate('/dashboard')
-    } catch (err) {
-      setError(err.response?.data?.error || 'Login failed')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const error = params.get('error') ? 'Google sign-in failed. Try again.' : ''
 
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center px-4">
@@ -48,44 +29,7 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Email</label>
-              <input
-                type="email"
-                className="input-field"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Password</label>
-              <input
-                type="password"
-                className="input-field"
-                placeholder="••••••••"
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                required
-              />
-            </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2">
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-dark-500" />
-            </div>
-            <div className="relative flex justify-center text-xs text-slate-500">
-              <span className="bg-dark-800 px-2">or continue with</span>
-            </div>
-          </div>
-
-          <a
+          
             href={`${API}/auth/google`}
             className="btn-secondary w-full flex items-center justify-center gap-2 py-3"
           >
@@ -98,11 +42,6 @@ export default function Login() {
             Sign in with Google
           </a>
         </div>
-
-        <p className="text-center text-slate-400 text-sm mt-6">
-          No account?{' '}
-          <Link to="/register" className="text-accent-primary hover:underline">Create one free</Link>
-        </p>
       </div>
     </div>
   )
