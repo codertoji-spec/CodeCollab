@@ -13,7 +13,7 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
 **Real-time Sync:** Yjs CRDT  
-**Execution:** JDoodle API (C++17, Python, JS, TS, Go, Rust, Java)  
+**Execution:** JDoodle API (C++17, Python, JS, TS )  
 **Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
@@ -25,7 +25,7 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
-| Code execution | 7 languages via JDoodle API |
+| Code execution | 4 languages via JDoodle API |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
