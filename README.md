@@ -6,6 +6,20 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 
 **Live Demo:** [code-collab-woad.vercel.app](https://code-collab-woad.vercel.app)
 
+<!--
+TODO: record a 15–30s screen capture and drop it here as demo.gif, e.g.:
+![CodeCollab demo](./docs/demo.gif)
+
+What to record (one continuous take, 2 browser windows side by side):
+  1. Window A creates a room, window B joins with the room code.
+  2. Type in window A — show the cursor + text appearing live in window B.
+  3. Move the cursor in window B — show the labeled cursor in window A.
+  4. Hit Run on a short snippet (e.g. print/console.log) — show output
+     appearing in both windows.
+  5. (Optional) Open version history and restore an older snapshot.
+Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
+-->
+
 ---
 
 ## Stack
@@ -13,7 +27,7 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
 **Real-time Sync:** Yjs CRDT  
-**Execution:** JDoodle API (C++17, Python, JS, TS )  
+**Execution:** JDoodle API (C++17, Python, JavaScript, TypeScript, Go, Rust, Java)  
 **Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
@@ -25,13 +39,11 @@ Real-time collaborative code editor. Multiple developers edit code simultaneousl
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
-| Code execution | 4 languages via JDoodle API |
+| Code execution | 7 languages via JDoodle API |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
 | Auth | Email/password + Google OAuth, JWT-based |
-
----
 
 ---
 
@@ -45,7 +57,7 @@ cd CodeCollab
 ### Backend
 ```bash
 cd backend
-cp .env.example .env   # fill in values
+cp .env.example .env   # fill in values — JDOODLE_CLIENT_ID/SECRET are required, server won't start without them
 npm install
 node src/index.js
 ```
@@ -53,6 +65,7 @@ node src/index.js
 ### Frontend
 ```bash
 cd frontend
+cp .env.example .env   # defaults already match the backend's default port
 npm install
 npm run dev
 ```
@@ -96,14 +109,20 @@ VITE_SOCKET_URL=http://localhost:5000
 
 ## Architecture
 
-```
-Frontend (React/Vite — Vercel)
-    ↕ HTTP REST    → Backend (Express — Render)
-    ↕ WebSocket    → Socket.io → Broadcast to room
-                   ↓ Yjs CRDT state
-                   Supabase PostgreSQL
-                   ↓ JDoodle API
-                   Code execution (7 languages)
+```mermaid
+flowchart LR
+    FE["Frontend<br/>React + Vite<br/>(Vercel)"]
+    BE["Backend<br/>Express + Socket.io<br/>(Render)"]
+    YJS["Yjs Doc<br/>(in-memory per room)"]
+    PG["PostgreSQL<br/>(Supabase)"]
+    JD["JDoodle API<br/>(code execution)"]
+
+    FE -- "HTTP REST (auth, rooms, snapshots)" --> BE
+    FE <-- "WebSocket (live cursors, chat, CRDT updates)" --> BE
+    BE <--> YJS
+    YJS -- "persisted every ~5s / on disconnect" --> PG
+    BE -- "snapshots, rooms, users" --> PG
+    BE -- "run code" --> JD
 ```
 
 ### Real-time Sync (Yjs CRDT)
@@ -119,6 +138,26 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
 - Manual save / auto-save every 10 min / snapshot on language change
 - Max 100 snapshots per room
 - Restore syncs to all peers via CRDT transaction
+
+---
+
+## Known Limitations
+
+- **JDoodle free tier: 200 requests/day** across the whole deployed app. Once
+  hit, the Run button will return an execution error until the quota resets.
+  A self-hosted per-language Docker sandbox was scoped as the fix (see
+  `backend/sandbox/README.md`) but isn't wired up yet.
+- **No self-hosted execution sandbox yet** — all code execution is fully
+  outsourced to JDoodle's infrastructure; nothing runs untrusted code on this
+  server.
+- **Room roles are per-user-per-room, not per-session** — joining a room's
+  view-only link demotes that user's role for that room even if they were
+  previously an editor there (see `roomController.js`). Intentional, but
+  worth knowing if you're testing with one account across two tabs.
+- **In-memory room state** (`roomMeta` in `index.js`) means a backend
+  restart drops live presence/cursor state for active rooms — the Yjs
+  document itself is safe (persisted to Postgres), but users will need to
+  rejoin the room in the UI.
 
 ---
 

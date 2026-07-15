@@ -29,21 +29,13 @@ services:
       SESSION_SECRET: codecollab_session_secret_change_in_production
       GOOGLE_CLIENT_ID: enter here
       GOOGLE_CLIENT_SECRET: enter here
-      # ── Internal sandbox tuning ──────────────────────────────────────────
-      EXEC_TIMEOUT_MS: "5000"
-      EXEC_MEMORY: "256m"
-      EXEC_CPUS: "0.5"
-      EXEC_PIDS: "64"
-      EXEC_OUTPUT_MAX: "65536"
+      # Required — server throws at startup if unset. Get keys at
+      # https://www.jdoodle.com/compiler-api (free tier: 200 req/day).
+      JDOODLE_CLIENT_ID: enter here
+      JDOODLE_CLIENT_SECRET: enter here
+      EXEC_TIMEOUT_MS: "15000"
     ports:
       - "5000:5000"
-    volumes:
-      # Required so the backend can spawn sibling sandbox containers.
-      - /var/run/docker.sock:/var/run/docker.sock
-      # Bind-mount paths in `docker run -v ...` are resolved by the HOST
-      # daemon. Sharing /tmp ensures os.tmpdir() inside the backend resolves
-      # to the same path the daemon sees.
-      - /tmp:/tmp
     depends_on:
       db:
         condition: service_healthy

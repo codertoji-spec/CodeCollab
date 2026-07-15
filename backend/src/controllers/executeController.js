@@ -1,13 +1,17 @@
 /**
- * executeController.js — internal sandboxed execution.
+ * executeController.js — code execution via JDoodle's hosted API.
  *
- * Wandbox has been removed. We now delegate to executionService which spawns
- * an isolated, resource-capped Docker container per request.
+ * executionService delegates each run to api.jdoodle.com (free tier: 200
+ * requests/day). No sandboxing happens on this server — execution is fully
+ * outsourced to JDoodle's infrastructure.
  *
- * Response shape is intentionally identical to the previous Wandbox version:
- *   { output, error, compilerMessage, exitCode, signal }
- * so the frontend (Room.jsx) and the Socket.io 'execution-result' relay keep
- * working without changes.
+ * A self-hosted, per-language Docker sandbox was scoped (see
+ * backend/sandbox/) but is not currently wired up — see backend/sandbox/README.md.
+ *
+ * Response shape: { output, error, compilerMessage, exitCode, signal }
+ * — kept stable so the frontend (Room.jsx) and the Socket.io
+ * 'execution-result' relay don't need to change if the execution backend
+ * changes again in the future.
  */
 const executionService = require('../services/executionService');
 const { LANGS, normalizeLang } = require('../services/langConfig');
@@ -45,11 +49,4 @@ const executeCode = async (req, res) => {
   }
 };
 
-// Re-export normalizeLang and a LANG_MAP-shaped object so existing tests/imports
-// continue to resolve. WANDBOX_LANG_MAP kept as an alias for backward compat.
-module.exports = {
-  executeCode,
-  normalizeLang,
-  WANDBOX_LANG_MAP: LANGS, // legacy export name
-  LANGS,
-};
+module.exports = { executeCode, normalizeLang, LANGS };

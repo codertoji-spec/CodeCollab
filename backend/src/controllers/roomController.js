@@ -32,7 +32,8 @@ const createRoom = async (req, res) => {
     );
     const room = result.rows[0];
     await pool.query(
-      'INSERT INTO room_participants (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      `INSERT INTO room_participants (room_id, user_id, role) VALUES ($1, $2, 'editor')
+       ON CONFLICT (room_id, user_id) DO NOTHING`,
       [room.id, req.user.id]
     );
     res.status(201).json({ room });
@@ -51,13 +52,22 @@ const joinRoom = async (req, res) => {
     if (editResult.rows[0]) {
       const room = editResult.rows[0];
       await pool.query(
-        'INSERT INTO room_participants (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        `INSERT INTO room_participants (room_id, user_id, role) VALUES ($1, $2, 'editor')
+         ON CONFLICT (room_id, user_id) DO UPDATE SET role = 'editor'`,
         [room.id, req.user.id]
       );
       return res.json({ room, role: 'editor' });
     }
     const viewResult = await pool.query('SELECT * FROM rooms WHERE view_code = $1', [code.toUpperCase()]);
-    if (viewResult.rows[0]) return res.json({ room: viewResult.rows[0], role: 'viewer' });
+    if (viewResult.rows[0]) {
+      const room = viewResult.rows[0];
+      await pool.query(
+        `INSERT INTO room_participants (room_id, user_id, role) VALUES ($1, $2, 'viewer')
+         ON CONFLICT (room_id, user_id) DO UPDATE SET role = 'viewer'`,
+        [room.id, req.user.id]
+      );
+      return res.json({ room, role: 'viewer' });
+    }
     res.status(404).json({ error: 'Room not found. Check your code and try again.' });
   } catch (err) {
     console.error('Join room error:', err);

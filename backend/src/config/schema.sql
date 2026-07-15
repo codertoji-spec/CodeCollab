@@ -41,9 +41,13 @@ CREATE INDEX IF NOT EXISTS idx_snapshots_room_saved
   ON code_snapshots (room_id, saved_at DESC);
 
 -- Room participants table
+-- role: 'editor' (joined via room_code) or 'viewer' (joined via view_code).
+-- This is the server-side source of truth for authorization — see
+-- middleware/roomAccess.js. Never trust a client-sent role.
 CREATE TABLE IF NOT EXISTS room_participants (
   room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  role VARCHAR(10) NOT NULL DEFAULT 'editor',
   joined_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(room_id, user_id)
 );
@@ -61,6 +65,7 @@ CREATE TABLE IF NOT EXISTS messages (
 -- ── Safe migrations (re-runnable on existing DBs) ─────────────────────────────
 ALTER TABLE rooms ADD COLUMN IF NOT EXISTS yjs_state BYTEA;
 ALTER TABLE code_snapshots ADD COLUMN IF NOT EXISTS label VARCHAR(100);
+ALTER TABLE room_participants ADD COLUMN IF NOT EXISTS role VARCHAR(10) NOT NULL DEFAULT 'editor';
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_room_saved
   ON code_snapshots (room_id, saved_at DESC);

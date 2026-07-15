@@ -5,8 +5,15 @@
 const https = require('https');
 
 const EXEC_TIMEOUT_MS = parseInt(process.env.EXEC_TIMEOUT_MS || '15000', 10);
-const CLIENT_ID     = process.env.JDOODLE_CLIENT_ID     || 'd98c07546c906707c837873dacb29390';
-const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET || 'b782c6a3f88fe8788349d6c3c0189083f3d0e62636e710e136a823c564cdff54';
+const CLIENT_ID     = process.env.JDOODLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET;
+
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  throw new Error(
+    'JDOODLE_CLIENT_ID and JDOODLE_CLIENT_SECRET must be set in the environment. ' +
+    'Get credentials at https://www.jdoodle.com/compiler-api and set them in backend/.env (see .env.example).'
+  );
+}
 
 const LANG_MAP = {
   cpp:        { language: 'cpp17',      versionIndex: '1' },
