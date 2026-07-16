@@ -27,7 +27,7 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
 **Real-time Sync:** Yjs CRDT  
-**Execution:** JDoodle API (C++17, Python, JavaScript, TypeScript, Go, Rust, Java)  
+**Execution:** JDoodle API (C++17, Python, JavaScript, TypeScript)  
 **Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
@@ -39,7 +39,7 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
-| Code execution | 7 languages via JDoodle API |
+| Code execution | 4 languages via JDoodle API |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
@@ -103,7 +103,7 @@ VITE_SOCKET_URL=http://localhost:5000
 | Database | Supabase | PostgreSQL (connection pooler) |
 
 > **Note:** Code execution uses JDoodle API (200 req/day free tier).  
-> Run button works for all 7 languages in the deployed version.
+> Run button works for all 4 languages in the deployed version.
 
 ---
 
@@ -147,6 +147,10 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
   hit, the Run button will return an execution error until the quota resets.
   A self-hosted per-language Docker sandbox was scoped as the fix (see
   `backend/sandbox/README.md`) but isn't wired up yet.
+- **Go, Rust, and Java are wired up server-side** (`executionService.js`
+  already maps them to JDoodle) but not yet exposed in the language dropdown
+  (`Dashboard.jsx`/`Room.jsx` only list javascript/python/cpp/typescript) —
+  adding them to the UI is a small follow-up, not a backend change.
 - **No self-hosted execution sandbox yet** — all code execution is fully
   outsourced to JDoodle's infrastructure; nothing runs untrusted code on this
   server.
