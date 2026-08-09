@@ -109,4 +109,23 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, googleCallback, forgotPassword };
+const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token and new password required' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const hash = await bcrypt.hash(newPassword, 12);
+    
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, decoded.userId]);
+    
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(400).json({ error: 'Invalid or expired reset token' });
+  }
+};
+
+module.exports = { register, login, getMe, googleCallback, forgotPassword, resetPassword };
