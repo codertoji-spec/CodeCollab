@@ -43,9 +43,9 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Version history | Manual snapshots + auto-save every 10 min |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
-| Auth | Email/password + Google OAuth, JWT-based, Password Reset (Resend) |
-| UI/UX | Premium Glassmorphic design, GSAP interactive backgrounds, WebGL animations |
 | Auth | Email/password + Google OAuth, JWT-based |
+| Password Reset | Brevo HTTP API (bypasses Render SMTP firewalls) with stateless single-use JWTs |
+| UI/UX | Premium Glassmorphic design, GSAP interactive backgrounds |
 ---
 
 ## Local Setup
@@ -85,10 +85,8 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 JDOODLE_CLIENT_ID=...
 JDOODLE_CLIENT_SECRET=...
-<<<<<<< HEAD
-RESEND_API_KEY=...
-=======
->>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
+BREVO_API_KEY=...
+EMAIL_USER=...
 ```
 
 **Frontend `.env`:**
@@ -202,6 +200,7 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
 - Snapshot saves are atomic DB transactions
 - Chat messages sanitized + capped at 500 chars server-side
 - Yjs editor role verified server-side before applying updates
+- Password reset tokens are statelessly bound to the user's `password_hash`, ensuring single-use and immediate invalidation upon password change.
 
 ---
 
