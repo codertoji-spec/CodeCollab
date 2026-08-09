@@ -129,13 +129,30 @@ io.on('connection', (socket) => {
   const { id: userId, username } = socket.verifiedUser;
   console.log(`Socket connected: ${socket.id} (user: ${username})`);
 
-  socket.on('join-room', async ({ roomId, role, language }) => {
-    // role still comes from client — but userId/username are server-verified
+  socket.on('join-room', async ({ roomId, role: clientRole, language }) => {
     socket.join(roomId);
+    
+    // Fetch the actual verified role from PostgreSQL
+    let actualRole = 'viewer';
+    try {
+      const partResult = await pool.query(`
+        SELECT rp.role 
+        FROM room_participants rp
+        JOIN rooms r ON r.id = rp.room_id
+        WHERE (r.room_code = $1 OR r.view_code = $1) AND rp.user_id = $2
+      `, [roomId, userId]);
+      
+      if (partResult.rows.length > 0) {
+        actualRole = partResult.rows[0].role;
+      }
+    } catch (e) {
+      console.error('Socket role verification error:', e.message);
+    }
+
     const meta = getOrCreateMeta(roomId, language);
 
-    meta.users.set(socket.id, { userId, username, role, socketId: socket.id });
-    socket.data = { roomId, userId, username, role };
+    meta.users.set(socket.id, { userId, username, role: actualRole, socketId: socket.id });
+    socket.data = { roomId, userId, username, role: actualRole };
 
     // Start auto-snapshot timer for this room (no-op if already running)
     scheduleAutoSnapshot(roomId);

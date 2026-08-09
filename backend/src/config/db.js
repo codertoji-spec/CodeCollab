@@ -6,6 +6,8 @@ const pool = new Pool({
 
 pool.on('connect', () => {
   console.log('Connected to PostgreSQL database');
+  pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INT DEFAULT 1')
+    .catch(err => console.error('Auto-migration error:', err));
 });
 
 pool.on('error', (err) => {

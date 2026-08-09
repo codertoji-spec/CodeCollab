@@ -24,6 +24,12 @@ const pruneCache = () => {
 /** Call after password change / logout to bust cached entry. */
 const invalidateToken = (token) => TOKEN_CACHE.delete(token);
 
+const invalidateUserTokens = (userId) => {
+  for (const [k, v] of TOKEN_CACHE) {
+    if (v.user.id === userId) TOKEN_CACHE.delete(k);
+  }
+};
+
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -51,7 +57,7 @@ const authenticateToken = async (req, res, next) => {
   // 3. Cache miss → DB lookup (only SELECT needed columns, not *)
   try {
     const result = await pool.query(
-      'SELECT id, username, email, avatar_url, created_at FROM users WHERE id = $1',
+      'SELECT id, username, email, avatar_url, created_at, token_version FROM users WHERE id = $1',
       [decoded.userId]
     );
     if (!result.rows[0]) {
@@ -59,6 +65,11 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const user = result.rows[0];
+
+    // Check token version to instantly reject revoked tokens
+    if (user.token_version !== decoded.tokenVersion) {
+      return res.status(401).json({ error: 'Session expired. Please log in again.' });
+    }
     const jwtExp    = decoded.exp * 1000;
     const expiresAt = Math.min(jwtExp, now + CACHE_CAP);
 
@@ -73,4 +84,4 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticateToken, invalidateToken };
+module.exports = { authenticateToken, invalidateToken, invalidateUserTokens };

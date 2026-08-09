@@ -3,8 +3,10 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const axios = require('axios');
 
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const { invalidateUserTokens } = require('../middleware/auth');
+
+const generateToken = (userId, tokenVersion = 1) => {
+  return jwt.sign({ userId, tokenVersion }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 const register = async (req, res) => {
@@ -23,7 +25,7 @@ const register = async (req, res) => {
       [username, email, hash]
     );
     const user = result.rows[0];
-    const token = generateToken(user.id);
+    const token = generateToken(user.id, 1);
     res.status(201).json({ token, user });
   } catch (err) {
     console.error('Register error:', err);
@@ -43,8 +45,8 @@ const login = async (req, res) => {
     if (!user.password_hash) return res.status(401).json({ error: 'Please use Google sign-in' });
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
-    const token = generateToken(user.id);
-    const { password_hash, ...safeUser } = user;
+    const token = generateToken(user.id, user.token_version || 1);
+    const { password_hash, token_version, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
     console.error('Login error:', err);
@@ -58,7 +60,7 @@ const getMe = async (req, res) => {
 };
 
 const googleCallback = (req, res) => {
-  const token = generateToken(req.user.id);
+  const token = generateToken(req.user.id, req.user.token_version || 1);
   res.redirect(`${process.env.CLIENT_URL}/auth/google/success?token=${token}`);
 };
 
@@ -134,7 +136,14 @@ const resetPassword = async (req, res) => {
     
     const hash = await bcrypt.hash(newPassword, 12);
     
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, decoded.userId]);
+    // Increment token_version to invalidate all existing 7-day JWT sessions
+    await pool.query(
+      'UPDATE users SET password_hash = $1, token_version = COALESCE(token_version, 1) + 1 WHERE id = $2', 
+      [hash, decoded.userId]
+    );
+    
+    // Clear any currently cached tokens for this user
+    invalidateUserTokens(decoded.userId);
     
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (err) {
