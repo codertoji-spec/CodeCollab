@@ -78,13 +78,13 @@ const forgotPassword = async (req, res) => {
     }
     
     const resetToken = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
-    const resetLink = \`\${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=\${resetToken}\`;
+    const resetLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
     
     const { data, error } = await resend.emails.send({
       from: 'CodeCollab <noreply@codecollab.dev>',
       to: email,
       subject: 'Reset your CodeCollab Password',
-      html: \`<p>Hello,</p><p>You requested a password reset. Click the link below to reset your password:</p><p><a href="\${resetLink}">Reset Password</a></p><p>If you didn't request this, you can safely ignore this email.</p>\`
+      html: `<p>Hello,</p><p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p><p>If you didn't request this, you can safely ignore this email.</p>`
     });
     
     if (error) {
