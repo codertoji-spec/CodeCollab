@@ -71,6 +71,11 @@ const ParticleText = ({
 }) => {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
+  const colorsRef = useRef({ color, highlightColor });
+
+  useEffect(() => {
+    colorsRef.current = { color, highlightColor };
+  }, [color, highlightColor]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -126,24 +131,27 @@ const ParticleText = ({
       gathering = true;
     };
 
-    const drawParticle = particle => {
-      const size = particle.size;
-      ctx.fillStyle = particle.color;
-
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, size / 2, 0, Math.PI * 2);
-      ctx.fill();
-    };
-
     const render = now => {
       ctx.clearRect(0, 0, width, height);
 
+      const baseRgb = hexToRgb(colorsRef.current.color);
+      const highlightRgb = hexToRgb(colorsRef.current.highlightColor);
+
       if (glow && !reducedMotion) {
         ctx.shadowBlur = particleSize * 3;
-        ctx.shadowColor = highlightColor;
+        ctx.shadowColor = colorsRef.current.highlightColor;
       } else {
         ctx.shadowBlur = 0;
       }
+
+      const drawParticle = particle => {
+        const size = particle.size;
+        ctx.fillStyle = baseRgb && highlightRgb ? rgbToCss(mixRgb(baseRgb, highlightRgb, particle.blend)) : colorsRef.current.color;
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      };
 
       pointer.smoothX += (pointer.x - pointer.smoothX) * 0.18;
       pointer.smoothY += (pointer.y - pointer.smoothY) * 0.18;
@@ -280,15 +288,12 @@ const ParticleText = ({
 
       const maxParticles = Math.max(900, Math.min(5200, Math.floor((width * height) / 90)));
       const stride = Math.max(1, Math.ceil(targets.length / maxParticles));
-      const baseRgb = hexToRgb(color);
-      const highlightRgb = hexToRgb(highlightColor);
       const selected = targets.filter((_, index) => index % stride === 0);
 
       particles = selected.map((target, index) => {
         const seed = ((index * 9301 + 49297) % 233280) / 233280;
         const depth = 0.45 + (((index * 233 + 97) % 1000) / 1000) * 0.9;
-        const blend = baseRgb && highlightRgb ? clamp(target.x / Math.max(1, width) + (seed - 0.5) * 0.35, 0, 1) : 0;
-        const particleColor = baseRgb && highlightRgb ? rgbToCss(mixRgb(baseRgb, highlightRgb, blend)) : color;
+        const blend = clamp(target.x / Math.max(1, width) + (seed - 0.5) * 0.35, 0, 1);
         const angle = seed * Math.PI * 2;
         const distance = (reducedMotion ? 0 : scatter) * (0.35 + depth * 0.75);
         const noiseAngle = depth * Math.PI * 2 * 10;
@@ -304,7 +309,7 @@ const ParticleText = ({
           targetX: target.x,
           targetY: target.y,
           size: Math.max(0.6, particleSize * (0.75 + target.alpha * 0.45)),
-          color: particleColor,
+          blend,
           seed,
           depth,
           delay: seed * stagger
@@ -383,8 +388,6 @@ const ParticleText = ({
     text,
     particleSize,
     density,
-    color,
-    highlightColor,
     scatter,
     gatherDuration,
     stagger,

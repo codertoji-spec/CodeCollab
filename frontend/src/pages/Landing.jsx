@@ -1,12 +1,34 @@
-
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import ParticleText from '../components/ParticleText'
 import WarpText from '../components/WarpText'
 import GradientWaves from '../components/GradientWaves'
 import SpecularButton from '../components/SpecularButton'
 
+const hslToHex = (h, s, l) => {
+  l /= 100;
+  const a = (s * Math.min(l, 1 - l)) / 100;
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+};
+
 export default function Landing() {
   const navigate = useNavigate();
+  const [hue, setHue] = useState(0);
+
+  useEffect(() => {
+    let animationFrameId;
+    const animate = () => {
+      setHue(h => (h + 0.165) % 360); // Slowly loop RGB hues (10% faster)
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-dark-900">
@@ -14,8 +36,8 @@ export default function Landing() {
       {/* Background Layer */}
       <div className="absolute inset-0 z-0">
         <GradientWaves
-          horizonColor="#5227FF"
-          waveColor="#FF9FFC"
+          horizonColor={hslToHex((hue + 40) % 360, 100, 50)}
+          waveColor={hslToHex(hue, 100, 65)}
           crestColor="#FFFFFF"
           speed={0.4}
           amplitude={2.5}
@@ -68,8 +90,8 @@ export default function Landing() {
               text="CODECOLLAB"
               particleSize={4}
               density={4}
-              color="#f8fafc"
-              highlightColor="#42fcff"
+              color={hslToHex((hue + 180) % 360, 100, 85)}
+              highlightColor={hslToHex((hue + 220) % 360, 100, 60)}
               scatter={180}
               gatherDuration={2000}
               stagger={180}
