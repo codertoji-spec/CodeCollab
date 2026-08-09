@@ -1,9 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
-const { Resend } = require('resend');
-
-const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key');
+const axios = require('axios');
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -80,15 +78,27 @@ const forgotPassword = async (req, res) => {
     const resetToken = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
     const resetLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
     
-    const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
-      to: email,
-      subject: 'Reset your CodeCollab Password',
-      html: `<p>Hello,</p><p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p><p>If you didn't request this, you can safely ignore this email.</p>`
-    });
-    
-    if (error) {
-      console.error('Resend error:', error);
+    try {
+      await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender: { 
+            email: process.env.EMAIL_USER || 'codecollab.noreply@gmail.com', 
+            name: 'CodeCollab' 
+          },
+          to: [{ email }],
+          subject: 'Reset your CodeCollab Password',
+          htmlContent: `<p>Hello,</p><p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p><p>If you didn't request this, you can safely ignore this email.</p>`
+        },
+        {
+          headers: {
+            'api-key': process.env.BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Brevo error:', error.response?.data || error.message);
       return res.status(500).json({ error: 'Failed to send reset email' });
     }
     
