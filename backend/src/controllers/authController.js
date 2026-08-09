@@ -70,12 +70,14 @@ const forgotPassword = async (req, res) => {
   }
   
   try {
-    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    const result = await pool.query('SELECT id, password_hash FROM users WHERE email = $1', [email]);
     if (!result.rows[0]) {
       return res.status(200).json({ message: 'If an account exists, a reset link has been sent.' });
     }
     
-    const resetToken = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
+    const user = result.rows[0];
+    const secret = (process.env.JWT_SECRET || 'secret') + user.password_hash;
+    const resetToken = jwt.sign({ userId: user.id }, secret, { expiresIn: '15m' });
     const resetLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
     
     try {
@@ -116,7 +118,20 @@ const resetPassword = async (req, res) => {
   }
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const unverifiedPayload = jwt.decode(token);
+    if (!unverifiedPayload || !unverifiedPayload.userId) {
+      return res.status(400).json({ error: 'Invalid reset token' });
+    }
+
+    const userResult = await pool.query('SELECT password_hash FROM users WHERE id = $1', [unverifiedPayload.userId]);
+    const user = userResult.rows[0];
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid reset token' });
+    }
+
+    const secret = (process.env.JWT_SECRET || 'secret') + user.password_hash;
+    const decoded = jwt.verify(token, secret);
+    
     const hash = await bcrypt.hash(newPassword, 12);
     
     await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, decoded.userId]);
@@ -124,7 +139,7 @@ const resetPassword = async (req, res) => {
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (err) {
     console.error('Reset password error:', err);
-    res.status(400).json({ error: 'Invalid or expired reset token' });
+    res.status(400).json({ error: 'Invalid, expired, or already used reset token' });
   }
 };
 
