@@ -1,5 +1,5 @@
-
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import DotGrid from '../components/DotGrid'
 import WarpText from '../components/WarpText'
 
@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react'
 export default function Login() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
+  const { login, register } = useAuth()
   const [view, setView] = useState('login') // 'login', 'signup', 'forgot'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,37 +26,17 @@ export default function Login() {
     
     if (view === 'login') {
       try {
-        const res = await fetch(`${API}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem('token', data.token);
-          navigate('/'); 
-        } else {
-          setStatusMessage({ type: 'error', text: data.error || 'Login failed' });
-        }
+        await login(email, password);
+        navigate('/dashboard');
       } catch (err) {
-        setStatusMessage({ type: 'error', text: 'Network error' });
+        setStatusMessage({ type: 'error', text: err.response?.data?.error || 'Login failed' });
       }
     } else if (view === 'signup') {
       try {
-        const res = await fetch(`${API}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem('token', data.token);
-          navigate('/');
-        } else {
-          setStatusMessage({ type: 'error', text: data.error || 'Signup failed' });
-        }
+        await register(username, email, password);
+        navigate('/dashboard');
       } catch (err) {
-        setStatusMessage({ type: 'error', text: 'Network error' });
+        setStatusMessage({ type: 'error', text: err.response?.data?.error || 'Signup failed' });
       }
     } else if (view === 'forgot') {
       try {
