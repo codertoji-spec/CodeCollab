@@ -33,7 +33,10 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
+<<<<<<< HEAD
     "resend": "^6.18.1",
+=======
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0",
     "yjs": "^13.6.15"

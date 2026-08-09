@@ -1,6 +1,6 @@
+
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import DotGrid from '../components/DotGrid'
-import TrueFocus from '../components/TrueFocus'
 import WarpText from '../components/WarpText'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'

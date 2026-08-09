@@ -1,9 +1,12 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
+<<<<<<< HEAD
 const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key');
+=======
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -64,6 +67,7 @@ const googleCallback = (req, res) => {
   res.redirect(`${process.env.CLIENT_URL}/auth/google/success?token=${token}`);
 };
 
+<<<<<<< HEAD
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -99,3 +103,6 @@ const forgotPassword = async (req, res) => {
 };
 
 module.exports = { register, login, getMe, googleCallback, forgotPassword };
+=======
+module.exports = { register, login, getMe, googleCallback };
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59

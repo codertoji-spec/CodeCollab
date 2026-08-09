@@ -43,8 +43,12 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Version history | Manual snapshots + auto-save every 10 min |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
+<<<<<<< HEAD
 | Auth | Email/password + Google OAuth, JWT-based, Password Reset (Resend) |
 | UI/UX | Premium Glassmorphic design, GSAP interactive backgrounds, WebGL animations |
+=======
+| Auth | Email/password + Google OAuth, JWT-based |
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
 
 ---
 
@@ -85,7 +89,10 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 JDOODLE_CLIENT_ID=...
 JDOODLE_CLIENT_SECRET=...
+<<<<<<< HEAD
 RESEND_API_KEY=...
+=======
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
 ```
 
 **Frontend `.env`:**

@@ -8,17 +8,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@gsap/react": "^2.1.2",
     "@monaco-editor/react": "^4.6.0",
     "axios": "^1.6.0",
     "gsap": "^3.15.0",
     "motion": "^13.0.0",
     "ogl": "^1.0.11",
+=======
+    "@monaco-editor/react": "^4.6.0",
+    "axios": "^1.6.0",
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "socket.io-client": "^4.7.2",
+<<<<<<< HEAD
     "three": "^0.185.1",
+=======
+>>>>>>> e018e483c5587b47b9dd4274b3475e931c259f59
     "y-monaco": "^0.1.5",
     "y-protocols": "^1.0.6",
     "yjs": "^13.6.15"
