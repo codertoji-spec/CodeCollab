@@ -29,11 +29,11 @@
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.2",
     "lib0": "^0.2.93",
+    "nodemailer": "^9.0.5",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
-    "resend": "^6.18.1",
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0",
     "yjs": "^13.6.15"
