@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-slate-200 font-sans;
+    background-color: #0A0A0A;
+    color: #EDEDED;
+    /* Subtle radial gradient + a single soft yellow glow blob */
+    background-image:
+      radial-gradient(1200px 600px at 85% -10%, rgba(250, 204, 21, 0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(250, 204, 21, 0.06), transparent 60%),
+      radial-gradient(ellipse at center, #0F0F0F 0%, #0A0A0A 70%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(250, 204, 21, 0.35);
+    color: #0A0A0A;
+  }
+}
+
+@layer components {
+  /* Primary CTA — yellow on black with subtle glow + lift */
+  .btn-primary {
+    @apply bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-4 py-2 rounded-lg
+           transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+           shadow-[0_0_20px_rgba(250,204,21,0.35)] hover:shadow-[0_0_28px_rgba(250,204,21,0.55)]
+           hover:-translate-y-0.5;
+  }
+
+  /* Secondary — glass surface with thin border */
+  .btn-secondary {
+    @apply text-slate-200 font-medium px-4 py-2 rounded-lg transition-all duration-200
+           bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-yellow-400/40
+           backdrop-blur-md;
+  }
+
+  /* Input — dark glass with yellow focus glow */
+  .input-field {
+    @apply w-full rounded-lg px-4 py-2.5 text-slate-100 placeholder-zinc-500
+           bg-white/[0.04] border border-white/10
+           focus:outline-none focus:border-yellow-400/70
+           focus:ring-2 focus:ring-yellow-400/20
+           focus:shadow-[0_0_18px_rgba(250,204,21,0.18)]
+           backdrop-blur-md transition-all;
+  }
+
+  /* Card — glass panel */
+  .card {
+    @apply rounded-xl p-6 border border-white/[0.08]
+           bg-white/[0.035] backdrop-blur-md
+           shadow-[0_8px_32px_rgba(0,0,0,0.45)]
+           transition-all duration-200;
+  }
+
+  /* Navbar utility — semi-transparent black with blur + thin bottom border */
+  .glass-nav {
+    @apply backdrop-blur-md border-b border-white/[0.08];
+    background-color: rgba(10, 10, 10, 0.65);
+  }
+}
+
+.monaco-editor .cursors-layer > .cursor {
+  width: 2px !important;
+}
+
+/* Animated subtle background for landing — kept name, restyled for yellow/black */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-bg {
+  background:
+    radial-gradient(800px 400px at 80% 10%, rgba(250, 204, 21, 0.10), transparent 60%),
+    linear-gradient(-45deg, #0A0A0A, #111111, #0d0d0d, #0A0A0A);
+  background-size: 400% 400%;
+  animation: gradientShift 18s ease infinite;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Soft yellow glow used by Landing/Auth icon tiles */
+.glow {
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.35);
+}
+
+/* Custom scrollbar — black track, yellow hover */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0A0A0A; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(250, 204, 21, 0.55); }
+
+/* Native <select> dropdown options — readable on dark theme with yellow highlight */
+select {
+  color-scheme: dark;
+}
+select option {
+  background-color: #0A0A0A;
+  color: #EDEDED;
+  padding: 6px 8px;
+}
+select option:checked,
+select option:hover {
+  background: #FACC15 linear-gradient(0deg, #FACC15, #FACC15);
+  color: #0A0A0A;
+  font-weight: 600;
+}

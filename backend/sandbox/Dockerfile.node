@@ -1,0 +1,8 @@
+# Node.js sandbox — handles JavaScript and TypeScript (via tsx).
+FROM node:20-alpine
+RUN npm install -g tsx@4.19.2 \
+ && adduser -D -u 65534 sandboxer 2>/dev/null || true
+# coreutils provides GNU `timeout` with -s KILL support
+RUN apk add --no-cache coreutils
+WORKDIR /sandbox
+CMD ["sh"]
