@@ -1,44 +1,35 @@
 /**
- * executionService.js — JDoodle API backend (temporary)
+ * executionService.js — Piston API backend
  */
 
 const https = require('https');
 
 const EXEC_TIMEOUT_MS = parseInt(process.env.EXEC_TIMEOUT_MS || '15000', 10);
-const CLIENT_ID     = process.env.JDOODLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET;
-
-if (!CLIENT_ID || !CLIENT_SECRET) {
-  throw new Error(
-    'JDOODLE_CLIENT_ID and JDOODLE_CLIENT_SECRET must be set in the environment. ' +
-    'Get credentials at https://www.jdoodle.com/compiler-api and set them in backend/.env (see .env.example).'
-  );
-}
 
 const LANG_MAP = {
-  cpp:        { language: 'cpp17',      versionIndex: '1' },
-  javascript: { language: 'nodejs',     versionIndex: '4' },
-  typescript: { language: 'typescript', versionIndex: '1' },
-  python:     { language: 'python3',    versionIndex: '4' },
-  go:         { language: 'go',         versionIndex: '4' },
-  rust:       { language: 'rust',       versionIndex: '4' },
-  java:       { language: 'java',       versionIndex: '4' },
+  cpp:        { language: 'cpp',        version: '*' },
+  javascript: { language: 'javascript', version: '*' },
+  typescript: { language: 'typescript', version: '*' },
+  python:     { language: 'python',     version: '*' },
+  go:         { language: 'go',         version: '*' },
+  rust:       { language: 'rust',       version: '*' },
+  java:       { language: 'java',       version: '*' },
 };
 
-function jdoodlePost(body) {
+function pistonPost(body) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
     const opts = {
-      hostname: 'api.jdoodle.com',
+      hostname: 'emkc.org',
       port: 443,
-      path: '/v1/execute',
+      path: '/api/v2/piston/execute',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data),
       },
     };
-    const timer = setTimeout(() => reject(new Error('JDoodle timeout')), EXEC_TIMEOUT_MS);
+    const timer = setTimeout(() => reject(new Error('Piston execution timeout')), EXEC_TIMEOUT_MS);
     const req = https.request(opts, (res) => {
       let d = '';
       res.on('data', c => d += c);
@@ -60,28 +51,54 @@ async function run({ language, code, stdin = '' }) {
 
   let result;
   try {
-    result = await jdoodlePost({
-      clientId:     CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
-      script:       code,
-      stdin:        stdin || '',
-      language:     lang.language,
-      versionIndex: lang.versionIndex,
+    result = await pistonPost({
+      language: lang.language,
+      version: lang.version,
+      files: [{ content: code }],
+      stdin: stdin || '',
     });
   } catch (err) {
     return { output: '', error: `Execution error: ${err.message}`, compilerMessage: '', exitCode: null, signal: null };
   }
 
-  if (result.error) {
-    return { output: '', error: result.error, compilerMessage: '', exitCode: null, signal: null };
+  if (result.message) {
+    // Usually a rate limit or bad request error from Piston
+    return { output: '', error: result.message, compilerMessage: '', exitCode: null, signal: null };
   }
 
+  // Piston returns .compile (optional) and .run
+  const compileStage = result.compile || {};
+  const runStage = result.run || {};
+
+  let outputStr = '';
+  let errorStr = '';
+  let compilerMsg = compileStage.stderr || '';
+
+  // If compilation failed entirely
+  if (compileStage.code && compileStage.code !== 0) {
+    errorStr = compileStage.stderr || 'Compilation failed.';
+    return {
+      output: '',
+      error: errorStr,
+      compilerMessage: compilerMsg,
+      exitCode: compileStage.code,
+      signal: compileStage.signal || null,
+    };
+  }
+
+  // If execution ran
+  outputStr = runStage.stdout || '';
+  errorStr = runStage.stderr || '';
+  const finalExitCode = runStage.code !== undefined ? runStage.code : 0;
+  
+  // Sometimes execution yields error output but exit code is 0 (like in python when printing to stderr)
+  // Or sometimes it crashes. We'll return everything nicely formatted.
   return {
-    output:          result.output || '',
-    error:           '',
-    compilerMessage: '',
-    exitCode:        result.statusCode || 0,
-    signal:          null,
+    output: outputStr,
+    error: errorStr,
+    compilerMessage: compilerMsg,
+    exitCode: finalExitCode,
+    signal: runStage.signal || null,
   };
 }
 

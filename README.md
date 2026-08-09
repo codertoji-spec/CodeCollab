@@ -192,6 +192,9 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
 3. Authorized redirect URI: `https://codecollab-gcgs.onrender.com/api/auth/google/callback`
 4. Add `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` to backend env
 
+### Execution Engine
+The platform uses the [Piston API](https://github.com/engineer-man/piston) for code execution. It is completely free and requires zero configuration or API keys, allowing users to compile and run multiple languages seamlessly.
+
 ---
 
 ## Security Notes
