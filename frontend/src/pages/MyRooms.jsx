@@ -20,6 +20,7 @@ export default function MyRooms() {
   const navigate = useNavigate()
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
+  const [shareModal, setShareModal] = useState(null)
 
   useEffect(() => {
     fetchRooms()
@@ -39,6 +40,10 @@ export default function MyRooms() {
 
   const enterRoom = (room) => {
     navigate(`/room/${room.id}`, { state: { roomId: room.id, username: user.username, language: room.language } })
+  }
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
   }
 
   return (
@@ -127,7 +132,7 @@ export default function MyRooms() {
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
                         {getLangIcon(room.language, "w-6 h-6")}
                       </div>
-                      <button className="text-slate-500 hover:text-white transition-colors mt-1" onClick={e => { e.stopPropagation(); /* TODO: share modal if needed */ }}>
+                      <button className="text-slate-500 hover:text-white transition-colors mt-1" onClick={e => { e.stopPropagation(); setShareModal(room); }}>
                         <FiMoreVertical className="w-5 h-5" />
                       </button>
                     </div>
@@ -178,6 +183,83 @@ export default function MyRooms() {
           </footer>
         </div>
       </div>
+
+      {/* Glassmorphic Share Modal */}
+      {shareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
+          {/* Modal Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShareModal(null)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-lg bg-[#0f0f13]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in-95 duration-200 mx-4">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-bold text-white">Share Workspace</h3>
+              <button 
+                onClick={() => setShareModal(null)} 
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <p className="text-slate-400 text-sm mb-6">
+              Invite collaborators to <span className="text-white font-semibold">"{shareModal.name}"</span>. 
+            </p>
+
+            <div className="space-y-4">
+              {/* Edit Code Card */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 relative overflow-hidden group hover:border-indigo-500/50 transition-colors">
+                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Editor Access</span>
+                  <span className="text-xs text-slate-500">Can write and execute</span>
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="font-mono text-3xl font-black tracking-[0.15em] text-white">
+                    {shareModal.room_code}
+                  </span>
+                  <button 
+                    onClick={() => copyToClipboard(shareModal.room_code)} 
+                    className="bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              {/* View Code Card */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Viewer Access</span>
+                  <span className="text-xs text-slate-500">Read-only live view</span>
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="font-mono text-3xl font-black tracking-[0.15em] text-white">
+                    {shareModal.view_code}
+                  </span>
+                  <button 
+                    onClick={() => copyToClipboard(shareModal.view_code)} 
+                    className="bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => { setShareModal(null); enterRoom(shareModal) }} 
+              className="w-full bg-white text-black hover:bg-slate-200 font-bold py-4 rounded-xl mt-8 transition-all shadow-xl active:scale-[0.98]"
+            >
+              Enter Workspace →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
