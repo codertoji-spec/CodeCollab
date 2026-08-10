@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import ShinyText from '../components/ShinyText'
 import WarpText from '../components/WarpText'
+import GooeyNav from '../components/GooeyNav'
 import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiTerminal } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
@@ -60,15 +61,15 @@ export default function MyRooms() {
           </div>
 
           {/* Center Nav Items */}
-          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 bg-[#1A1625] px-2 py-1.5 rounded-2xl border border-white/5">
-            <button onClick={() => navigate('/')} className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium text-sm transition-all">
-              <FiHome className="w-4 h-4" />
-              Dashboard
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#2D2342] text-[#A78BFA] rounded-xl font-medium text-sm transition-all shadow-inner">
-              <FiUsers className="w-4 h-4" />
-              My Rooms
-            </button>
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 bg-[#1A1625] px-4 py-2 rounded-[2rem] border border-white/5">
+            <GooeyNav 
+              items={[
+                { label: "Dashboard", href: "/", icon: <FiHome className="w-4 h-4" /> },
+                { label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }
+              ]} 
+              initialActiveIndex={1}
+              particleCount={9}
+            />
           </div>
 
           <div className="flex items-center gap-0">
