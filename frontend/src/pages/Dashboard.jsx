@@ -27,19 +27,12 @@ const authHeader = () => ({
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [rooms, setRooms] = useState([])
   const [tab, setTab] = useState('create') // 'create' | 'join'
   const [createForm, setCreateForm] = useState({ name: '', language: 'javascript' })
   const [joinCode, setJoinCode] = useState('')
   const [shareModal, setShareModal] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    axios.get(`${API}/rooms/list`, authHeader())
-      .then(r => setRooms(r.data.rooms))
-      .catch(() => {})
-  }, [])
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -48,7 +41,6 @@ export default function Dashboard() {
     try {
       const res = await axios.post(`${API}/rooms/create`, createForm, authHeader())
       const room = res.data.room
-      setRooms(prev => [room, ...prev])
       setShareModal(room)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create room')
@@ -149,10 +141,10 @@ export default function Dashboard() {
             <p className="text-slate-400 text-lg">Create a new workspace or jump back into a session.</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="flex justify-center">
             
-            {/* Left Column - Actions */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
+            {/* Center Column - Actions */}
+            <div className="w-full max-w-md flex flex-col gap-6">
               
               {/* Tab Selector */}
               <div className="flex bg-black/40 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 shadow-2xl">
@@ -233,58 +225,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Right Column - Room Grid */}
-            <div className="lg:col-span-7">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Your Recent Rooms</h2>
-              </div>
-              
-              {rooms.length === 0 ? (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/5 rounded-3xl p-12 text-center flex flex-col items-center justify-center h-full min-h-[300px]">
-                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 border border-white/10">
-                    <span className="text-2xl">🌌</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">The void is empty</h3>
-                  <p className="text-slate-400 text-sm max-w-xs">Create your first room on the left to start collaborating in real-time.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                  {rooms.map(room => (
-                    <div 
-                      key={room.id} 
-                      className="group relative bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 hover:border-purple-500/50 rounded-2xl p-5 transition-all duration-300 cursor-pointer overflow-hidden"
-                      onClick={() => enterRoom(room)}
-                    >
-                      {/* Hover glow effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      
-                      <div className="relative z-10 flex flex-col h-full">
-                        <div className="flex items-start justify-between mb-4">
-                          <h3 className="font-bold text-lg text-white truncate pr-4 group-hover:text-purple-300 transition-colors">{room.name}</h3>
-                          <div className={`text-xs px-2 py-1 rounded-md bg-black/40 border border-white/10 font-mono ${LANG_COLORS[room.language] || 'text-slate-400'}`}>
-                            {room.language}
-                          </div>
-                        </div>
-                        
-                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
-                          <span className="text-xs text-slate-500 font-medium">
-                            {new Date(room.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                          </span>
-                          
-                          <div className="flex gap-2">
-                            <button
-                              onClick={e => { e.stopPropagation(); setShareModal(room) }}
-                              className="text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all active:scale-95"
-                            >
-                              Share
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
           </div>
