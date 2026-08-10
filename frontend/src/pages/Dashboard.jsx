@@ -106,8 +106,8 @@ export default function Dashboard() {
               CodeCollab
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg">
+          <div className="flex items-center gap-0">
+            <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
               {user?.avatar_url ? (
                 <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
               ) : (
@@ -116,7 +116,7 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform" style={{ width: '120px', height: '50px' }}>
+            <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform -ml-4 z-10" style={{ width: '100px', height: '50px' }}>
               <WarpText
                 text="Sign Out"
                 color="#ffffff"
