@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import LiquidEther from '../components/LiquidEther'
+import WarpText from '../components/WarpText'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -119,8 +120,21 @@ export default function Dashboard() {
               )}
               <span className="text-slate-200 text-sm font-medium pr-1">{user?.username}</span>
             </div>
-            <button onClick={logout} className="text-slate-400 hover:text-white text-sm font-medium transition-colors">
-              Sign Out
+            <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform" style={{ width: '120px', height: '50px' }}>
+              <WarpText
+                text="Sign Out"
+                color="#ffffff"
+                warpStrength={0.08}
+                warpScale={1.7}
+                speed={0.55}
+                pointerInfluence={0.42}
+                pointerStrength={0.38}
+                refraction={0.018}
+                ripple={true}
+                fontSize="1.1rem"
+                fontWeight={700}
+                style={{ width: '100%', height: '100%', minHeight: 'auto' }}
+              />
             </button>
           </div>
         </nav>
