@@ -102,9 +102,6 @@ export default function Dashboard() {
         {/* Navbar */}
         <nav className="flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/5 pointer-events-auto">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <span className="text-white font-mono font-bold text-sm tracking-tighter">CC</span>
-            </div>
             <span className="font-bold tracking-tight text-lg bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
               CodeCollab
             </span>
