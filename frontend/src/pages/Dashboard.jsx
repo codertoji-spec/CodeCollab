@@ -144,10 +144,6 @@ export default function Dashboard() {
               <FiUsers className="w-4 h-4" />
               My Rooms
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium text-sm transition-all">
-              <FiGlobe className="w-4 h-4" />
-              Explore
-            </button>
           </div>
           <div className="flex items-center gap-0">
             <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
