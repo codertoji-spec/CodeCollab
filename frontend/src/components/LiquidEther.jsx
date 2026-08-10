@@ -31,6 +31,8 @@ export default function LiquidEther({
   const isVisibleRef = useRef(true);
   const resizeRafRef = useRef(null);
 
+  const colorsStr = JSON.stringify(colors);
+
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -64,7 +66,8 @@ export default function LiquidEther({
       return tex;
     }
 
-    const paletteTex = makePaletteTexture(colors);
+    const parsedColors = JSON.parse(colorsStr);
+    const paletteTex = makePaletteTexture(parsedColors);
     const bgVec4 = new THREE.Vector4(0, 0, 0, 0); // always transparent
 
     class CommonClass {
@@ -1104,7 +1107,7 @@ export default function LiquidEther({
     mouseForce,
     resolution,
     viscous,
-    colors,
+    colorsStr,
     autoDemo,
     autoSpeed,
     autoIntensity,
