@@ -1,9 +1,9 @@
 /**
- * executeController.js — code execution via Piston's hosted API.
+ * executeController.js — code execution via JDoodle's hosted API.
  *
- * executionService delegates each run to emkc.org/api/v2/piston/execute 
- * (free tier public endpoint). No sandboxing happens on this server — 
- * execution is fully outsourced to Piston's infrastructure.
+ * executionService delegates each run to api.jdoodle.com (free tier: 200
+ * requests/day). No sandboxing happens on this server — execution is fully
+ * outsourced to JDoodle's infrastructure.
  *
  * A self-hosted, per-language Docker sandbox was scoped (see
  * backend/sandbox/) but is not currently wired up — see backend/sandbox/README.md.

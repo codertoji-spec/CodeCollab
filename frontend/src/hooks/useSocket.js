@@ -7,10 +7,13 @@ export const useSocket = () => {
   const socketRef = useRef(null)
 
   useEffect(() => {
+    const token = localStorage.getItem('cc_token')
+    
     socketRef.current = io(SOCKET_URL, {
       transports: ['websocket'],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      auth: { token }
     })
 
     return () => {
