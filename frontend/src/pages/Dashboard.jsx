@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext'
 import LiquidEther from '../components/LiquidEther'
 import WarpText from '../components/WarpText'
 import ShinyText from '../components/ShinyText'
+import Carousel from '../components/Carousel'
+import { FiCode, FiTerminal, FiHash, FiFileText } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -27,12 +29,19 @@ const authHeader = () => ({
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [rooms, setRooms] = useState([])
   const [tab, setTab] = useState('create') // 'create' | 'join'
   const [createForm, setCreateForm] = useState({ name: '', language: 'javascript' })
   const [joinCode, setJoinCode] = useState('')
   const [shareModal, setShareModal] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    axios.get(`${API}/rooms/list`, authHeader())
+      .then(r => setRooms(r.data.rooms))
+      .catch(() => {})
+  }, [])
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -41,6 +50,7 @@ export default function Dashboard() {
     try {
       const res = await axios.post(`${API}/rooms/create`, createForm, authHeader())
       const room = res.data.room
+      setRooms(prev => [room, ...prev])
       setShareModal(room)
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create room')
@@ -133,18 +143,18 @@ export default function Dashboard() {
         </nav>
 
         {/* Dashboard Content */}
-        <div className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 pointer-events-auto">
-          <div className="mb-12 text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md">
+        <div className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-center">
+          <div className="mb-12 text-center md:text-left w-full max-w-md">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md text-center">
               Dashboard
             </h1>
-            <p className="text-slate-400 text-lg">Create a new workspace or jump back into a session.</p>
+            <p className="text-slate-400 text-lg text-center">Create a new workspace or jump back into a session.</p>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center w-full">
             
             {/* Center Column - Actions */}
-            <div className="w-full max-w-md flex flex-col gap-6">
+            <div className="w-full max-w-md flex flex-col gap-6 mb-16">
               
               {/* Tab Selector */}
               <div className="flex bg-black/40 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 shadow-2xl">
@@ -224,6 +234,31 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
+
+            {/* Carousel Recent Rooms */}
+            {rooms.length > 0 && (
+              <div className="w-full flex flex-col items-center mt-4">
+                <h2 className="text-2xl font-bold text-white mb-6">Your Recent Rooms</h2>
+                <Carousel
+                  baseWidth={320}
+                  autoplay={true}
+                  autoplayDelay={3000}
+                  pauseOnHover={true}
+                  loop={rooms.length > 1}
+                  round={false}
+                  items={rooms.map(room => ({
+                    id: room.id,
+                    title: room.name,
+                    description: `Language: ${room.language.charAt(0).toUpperCase() + room.language.slice(1)}\nCreated: ${new Date(room.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`,
+                    icon: room.language === 'python' ? <FiHash className="carousel-icon text-blue-400" /> 
+                        : room.language === 'cpp' ? <FiTerminal className="carousel-icon text-purple-400" />
+                        : room.language === 'javascript' ? <FiCode className="carousel-icon text-yellow-400" />
+                        : <FiFileText className="carousel-icon text-slate-300" />,
+                    onClick: () => enterRoom(room)
+                  }))}
+                />
+              </div>
+            )}
 
           </div>
         </div>
