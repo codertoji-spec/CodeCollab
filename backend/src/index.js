@@ -136,10 +136,9 @@ io.on('connection', (socket) => {
     let actualRole = 'viewer';
     try {
       const partResult = await pool.query(`
-        SELECT rp.role 
-        FROM room_participants rp
-        JOIN rooms r ON r.id = rp.room_id
-        WHERE (r.room_code = $1 OR r.view_code = $1) AND rp.user_id = $2
+        SELECT role 
+        FROM room_participants
+        WHERE room_id = $1 AND user_id = $2
       `, [roomId, userId]);
       
       if (partResult.rows.length > 0) {
