@@ -81,10 +81,21 @@ export default function MyRooms() {
                 </div>
               )}
             </div>
-            <button onClick={logout} className="relative z-10 -ml-4 flex items-center h-10 px-4 pl-6 bg-white/5 hover:bg-red-500/10 text-white hover:text-red-400 rounded-r-full font-medium transition-all group overflow-hidden border border-white/5 border-l-0">
-              <span className="relative z-10">
-                <WarpText text="Sign Out" />
-              </span>
+            <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform -ml-4 z-10" style={{ width: '100px', height: '50px' }}>
+              <WarpText
+                text="Sign Out"
+                color="#ffffff"
+                warpStrength={0.08}
+                warpScale={1.7}
+                speed={0.55}
+                pointerInfluence={0.42}
+                pointerStrength={0.38}
+                refraction={0.018}
+                ripple={true}
+                fontSize="1.1rem"
+                fontWeight={700}
+                style={{ width: '100%', height: '100%', minHeight: 'auto' }}
+              />
             </button>
           </div>
         </nav>
