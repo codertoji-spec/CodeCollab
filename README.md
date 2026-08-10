@@ -27,7 +27,7 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
 **Real-time Sync:** Yjs CRDT  
-**Execution:** JDoodle API (C++17, Python, JavaScript, TypeScript)  
+**Execution:** JDoodle API (C++17, Python, JavaScript, TypeScript, Java)  
 **Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
@@ -39,13 +39,14 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
-| Code execution | 4 languages via JDoodle API |
+| Code execution | 5 languages via JDoodle API (C++, Python, JS, TS, Java) |
 | Version history | Manual snapshots + auto-save every 10 min |
+| Workspace history | Dedicated "My Rooms" page tracking all past workspaces |
 | Integrated chat | Typing indicators + system messages |
 | Presence | Color-coded avatars for all users in room |
 | Auth | Email/password + Google OAuth, JWT-based |
 | Password Reset | Brevo HTTP API (bypasses Render SMTP firewalls) with stateless single-use JWTs |
-| UI/UX | Premium Glassmorphic design, GSAP interactive backgrounds |
+| UI/UX | Premium Glassmorphic design, GooeyNav, WarpText, animated backgrounds |
 ---
 
 ## Local Setup
