@@ -28,7 +28,7 @@ export default function MyRooms() {
     try {
       setLoading(true)
       const res = await axios.get(`${API}/rooms/list`, authHeader())
-      setRooms(res.data)
+      setRooms(res.data.rooms || [])
     } catch (err) {
       console.error(err)
     } finally {
