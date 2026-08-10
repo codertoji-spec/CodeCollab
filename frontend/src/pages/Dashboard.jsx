@@ -151,10 +151,10 @@ export default function Dashboard() {
             <p className="text-slate-400 text-lg text-center">Create a new workspace or jump back into a session.</p>
           </div>
 
-          <div className="flex flex-col items-center w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
             
-            {/* Center Column - Actions */}
-            <div className="w-full max-w-md flex flex-col gap-6 mb-16">
+            {/* Left Column - Actions */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
               
               {/* Tab Selector */}
               <div className="flex bg-black/40 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 shadow-2xl">
@@ -235,11 +235,12 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Carousel Recent Rooms */}
-            {rooms.length > 0 && (
-              <div className="w-full flex flex-col items-center mt-4">
+            {/* Right Column - Carousel Recent Rooms */}
+            {rooms.length > 0 ? (
+              <div className="lg:col-span-7 flex flex-col items-center w-full">
                 <h2 className="text-2xl font-bold text-white mb-6">Your Recent Rooms</h2>
-                <Carousel
+                <div className="w-full max-w-[320px] mx-auto">
+                  <Carousel
                   baseWidth={320}
                   autoplay={true}
                   autoplayDelay={3000}
@@ -257,6 +258,15 @@ export default function Dashboard() {
                     onClick: () => enterRoom(room)
                   }))}
                 />
+                </div>
+              </div>
+            ) : (
+              <div className="lg:col-span-7 flex flex-col items-center justify-center h-full min-h-[300px] bg-white/5 backdrop-blur-xl border border-white/5 rounded-3xl p-12">
+                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 border border-white/10">
+                  <span className="text-2xl">🌌</span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">The void is empty</h3>
+                <p className="text-slate-400 text-sm max-w-xs text-center">Create your first room on the left to start collaborating in real-time.</p>
               </div>
             )}
 
