@@ -95,6 +95,7 @@ export default function Carousel({
   const [isHovered, setIsHovered] = useState(false);
   const [isJumping, setIsJumping] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const wheelTimeoutRef = useRef(null);
 
   const containerRef = useRef(null);
   useEffect(() => {
@@ -204,10 +205,29 @@ export default function Carousel({
   const activeIndex =
     items.length === 0 ? 0 : loop ? (position - 1 + items.length) % items.length : Math.min(position, items.length - 1);
 
+  const handleWheel = (e) => {
+    if (wheelTimeoutRef.current || isJumping) return;
+
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(delta) < 5) return;
+
+    const direction = delta > 0 ? 1 : -1;
+    setPosition(prev => {
+      const next = prev + direction;
+      const max = itemsForRender.length - 1;
+      return Math.max(0, Math.min(next, max));
+    });
+
+    wheelTimeoutRef.current = setTimeout(() => {
+      wheelTimeoutRef.current = null;
+    }, 500);
+  };
+
   return (
     <div
       ref={containerRef}
       className={`carousel-container ${round ? 'round' : ''}`}
+      onWheel={handleWheel}
       style={{
         width: `${baseWidth}px`,
         ...(round && { height: `${baseWidth}px`, borderRadius: '50%' })
