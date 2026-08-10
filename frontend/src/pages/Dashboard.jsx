@@ -7,7 +7,7 @@ import WarpText from '../components/WarpText'
 import ShinyText from '../components/ShinyText'
 import Carousel from '../components/Carousel'
 import { SiJavascript, SiPython, SiCplusplus, SiTypescript } from 'react-icons/si'
-import { FiFileText, FiHome, FiUsers, FiGlobe } from 'react-icons/fi'
+import { FiFileText, FiHome, FiUsers, FiGlobe, FiPlus, FiLogIn, FiArrowRight, FiShield, FiTerminal, FiMoreVertical, FiCalendar, FiClock, FiZap, FiCode } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -168,31 +168,33 @@ export default function Dashboard() {
         </nav>
 
         {/* Dashboard Content */}
-        <div className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-center">
-          <div className="mb-12 text-center md:text-left w-full max-w-md">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md text-center">
-              Dashboard
+        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-start">
+          <div className="mb-12 text-left w-full">
+            <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md">
+              Welcome back, {user?.username}
             </h1>
-            <p className="text-slate-400 text-lg text-center">Create a new workspace or jump back into a session.</p>
+            <p className="text-slate-400 text-lg">Create a workspace or continue coding with your team.</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             
             {/* Left Column - Actions */}
             <div className="lg:col-span-5 flex flex-col gap-6">
               
               {/* Tab Selector */}
-              <div className="flex bg-black/40 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 shadow-2xl">
+              <div className="flex bg-[#121016] p-1.5 rounded-2xl shadow-inner border border-white/5">
                 <button
                   onClick={() => { setTab('create'); setError('') }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'create' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-purple-500/25' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                  className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'create' ? 'bg-[#2D2342] text-[#A78BFA] shadow-sm' : 'text-slate-400 hover:text-white'}`}
                 >
+                  <FiPlus className="w-4 h-4" />
                   Create Room
                 </button>
                 <button
                   onClick={() => { setTab('join'); setError('') }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'join' ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-purple-500/25' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                  className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'join' ? 'bg-[#2D2342] text-[#A78BFA] shadow-sm' : 'text-slate-400 hover:text-white'}`}
                 >
+                  <FiLogIn className="w-4 h-4" />
                   Join Room
                 </button>
               </div>
@@ -207,7 +209,7 @@ export default function Dashboard() {
               )}
 
               {/* Action Card */}
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+              <div className="bg-[#121016] border border-white/5 rounded-3xl p-8 shadow-2xl mt-2">
                 {tab === 'create' ? (
                   <form onSubmit={handleCreate} className="space-y-5">
                     <div>
@@ -244,9 +246,14 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-slate-200 font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-white/20 active:scale-[0.98] mt-2">
+                    <button type="submit" disabled={loading} className="w-full bg-[#6D28D9] text-white hover:bg-[#5B21B6] font-bold py-3.5 flex items-center justify-center gap-2 rounded-xl transition-all shadow-lg hover:shadow-purple-500/20 active:scale-[0.98] mt-4">
                       {loading ? 'Initializing...' : 'Launch Workspace'}
+                      <FiArrowRight className="w-4 h-4" />
                     </button>
+                    <div className="flex items-center justify-center gap-2 mt-4 text-slate-500 text-xs">
+                      <FiShield className="w-3.5 h-3.5" />
+                      Your code. In real time. Together.
+                    </div>
                   </form>
                 ) : (
                   <form onSubmit={handleJoin} className="space-y-5">
@@ -262,47 +269,101 @@ export default function Dashboard() {
                         maxLength={10}
                       />
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-slate-200 font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-white/20 active:scale-[0.98] mt-2">
+                    <button type="submit" disabled={loading} className="w-full bg-[#6D28D9] text-white hover:bg-[#5B21B6] font-bold py-3.5 flex items-center justify-center gap-2 rounded-xl transition-all shadow-lg hover:shadow-purple-500/20 active:scale-[0.98] mt-4">
                       {loading ? 'Authenticating...' : 'Join Workspace'}
+                      <FiArrowRight className="w-4 h-4" />
                     </button>
+                    <div className="flex items-center justify-center gap-2 mt-4 text-slate-500 text-xs">
+                      <FiShield className="w-3.5 h-3.5" />
+                      Collaborate securely with your team.
+                    </div>
                   </form>
                 )}
               </div>
             </div>
 
-            {/* Right Column - Carousel Recent Rooms */}
-            {rooms.length > 0 ? (
-              <div className="lg:col-span-7 flex flex-col items-center w-full">
-                <h2 className="text-2xl font-bold text-white mb-6">Your Recent Rooms</h2>
-                <div className="w-full max-w-[320px] mx-auto">
-                  <Carousel
-                  baseWidth={320}
-                  autoplay={true}
-                  autoplayDelay={3000}
-                  pauseOnHover={true}
-                  loop={rooms.length > 1}
-                  round={false}
-                  items={rooms.map(room => ({
-                    id: room.id,
-                    title: room.name,
-                    description: `Language: ${room.language.charAt(0).toUpperCase() + room.language.slice(1)}\nCreated: ${new Date(room.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`,
-                    icon: getLangIcon(room.language, "carousel-icon"),
-                    onClick: () => enterRoom(room)
-                  }))}
-                />
-                </div>
+            {/* Right Column - Recent Rooms Cards */}
+            <div className="lg:col-span-7 flex flex-col w-full h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Recent Rooms</h2>
+                <button className="text-sm font-semibold text-[#A78BFA] hover:text-[#C4B5FD] flex items-center gap-1 transition-colors">
+                  View all <FiArrowRight className="w-4 h-4" />
+                </button>
               </div>
-            ) : (
-              <div className="lg:col-span-7 flex flex-col items-center justify-center h-full min-h-[300px] bg-white/5 backdrop-blur-xl border border-white/5 rounded-3xl p-12">
-                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 border border-white/10">
-                  <span className="text-2xl">🌌</span>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">The void is empty</h3>
-                <p className="text-slate-400 text-sm max-w-xs text-center">Create your first room on the left to start collaborating in real-time.</p>
-              </div>
-            )}
 
+              {rooms.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 custom-scrollbar overflow-x-auto pb-4">
+                  {rooms.map(room => (
+                    <div key={room.id} className="bg-[#121016] border border-white/5 rounded-2xl p-5 flex flex-col hover:border-white/10 transition-colors shadow-xl min-w-[240px]">
+                      
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="w-10 h-10 bg-[#2D2342] rounded-xl flex items-center justify-center text-[#A78BFA]">
+                          <FiTerminal className="w-5 h-5" />
+                        </div>
+                        <button className="text-slate-500 hover:text-white transition-colors" onClick={e => { e.stopPropagation(); setShareModal(room); }}>
+                          <FiMoreVertical className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="mb-6">
+                        <h3 className="font-bold text-lg text-white truncate mb-2">{room.name}</h3>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/40 border border-white/5 text-xs font-semibold ${LANG_COLORS[room.language] || 'text-slate-400'}`}>
+                          {getLangIcon(room.language, "w-3 h-3")}
+                          {room.language.charAt(0).toUpperCase() + room.language.slice(1)}
+                        </div>
+                      </div>
+
+                      <div className="mt-auto">
+                        <div className="flex items-center gap-4 text-xs text-slate-500 font-medium mb-4">
+                          <div className="flex items-center gap-1.5">
+                            <FiCalendar className="w-3.5 h-3.5" />
+                            {new Date(room.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <FiClock className="w-3.5 h-3.5" />
+                            {new Date(room.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                          </div>
+                        </div>
+
+                        <button onClick={() => enterRoom(room)} className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
+                          Open Room <FiArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full min-h-[300px] bg-[#121016] border border-white/5 rounded-3xl p-12">
+                  <div className="w-16 h-16 bg-[#2D2342] rounded-full flex items-center justify-center mb-4 text-[#A78BFA]">
+                    <FiTerminal className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">No active workspaces</h3>
+                  <p className="text-slate-400 text-sm max-w-xs text-center">Create your first room on the left to start collaborating in real-time.</p>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Pro Tip Banner */}
+          <div className="w-full mt-10 bg-[#121016] border border-white/5 rounded-3xl p-8 flex items-center justify-between shadow-2xl relative overflow-hidden">
+            <div className="flex items-center gap-6 relative z-10">
+              <div className="w-14 h-14 bg-[#2D2342] rounded-full flex items-center justify-center text-[#A78BFA] shadow-inner shrink-0">
+                <FiZap className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-1">Pro Tip</h3>
+                <p className="text-slate-400 text-sm">Use rooms to collaborate in real-time, share code, and run it together. Happy coding!</p>
+              </div>
+            </div>
+            
+            <div className="hidden md:flex items-center gap-4 relative z-10 text-slate-500 opacity-20 pointer-events-none">
+              <FiCode className="w-24 h-24" />
+            </div>
+          </div>
+          
+          <footer className="w-full text-center py-8 text-slate-500 text-sm mt-auto">
+            © 2026 CodeCollab. All rights reserved.
+          </footer>
         </div>
       </div>
 
