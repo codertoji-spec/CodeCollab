@@ -9,9 +9,9 @@ const CLIENT_ID     = process.env.JDOODLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET;
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
-  throw new Error(
-    'JDOODLE_CLIENT_ID and JDOODLE_CLIENT_SECRET must be set in the environment. ' +
-    'Get credentials at https://www.jdoodle.com/compiler-api and set them in backend/.env (see .env.example).'
+  console.warn(
+    '⚠️ WARNING: JDOODLE_CLIENT_ID and JDOODLE_CLIENT_SECRET are not set in backend/.env. ' +
+    'Code execution will be disabled until they are configured.'
   );
 }
 
@@ -57,6 +57,16 @@ function jdoodlePost(body) {
 async function run({ language, code, stdin = '' }) {
   const lang = LANG_MAP[language];
   if (!lang) throw new Error(`Unsupported language: ${language}`);
+
+  if (!CLIENT_ID || !CLIENT_SECRET) {
+    return { 
+      output: '', 
+      error: 'Code execution is disabled. Please configure JDoodle API keys in the backend/.env file to enable this feature.', 
+      compilerMessage: '', 
+      exitCode: 1, 
+      signal: null 
+    };
+  }
 
   let result;
   try {
