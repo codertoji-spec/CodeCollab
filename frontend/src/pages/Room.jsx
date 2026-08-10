@@ -11,10 +11,10 @@ import VersionHistory from '../components/VersionHistory'
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
 
-const LANGUAGES = ['javascript', 'python', 'cpp', 'typescript']
+const LANGUAGES = ['javascript', 'python', 'cpp', 'java', 'typescript']
 const MONACO_LANG = {
   cpp: 'cpp', javascript: 'javascript', python: 'python',
-  typescript: 'typescript',
+  typescript: 'typescript', java: 'java'
 }
 
 const DEFAULT_CODE = {
@@ -22,6 +22,7 @@ const DEFAULT_CODE = {
   python: '# Welcome to CodeCollab!\nprint("Hello, World!")\n',
   cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}\n',
   typescript: '// Welcome to CodeCollab!\nconsole.log("Hello, World!");\n',
+  java: 'public class Solution {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}\n',
 }
 
 const CURSOR_COLORS = [

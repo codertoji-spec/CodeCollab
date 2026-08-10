@@ -12,7 +12,7 @@ import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-const LANGUAGES = ['javascript', 'python', 'cpp', 'typescript']
+const LANGUAGES = ['javascript', 'python', 'cpp', 'java', 'typescript']
 
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('cc_token')}` }

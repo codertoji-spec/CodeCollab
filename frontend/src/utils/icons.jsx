@@ -1,4 +1,5 @@
 import { SiJavascript, SiPython, SiCplusplus, SiTypescript } from 'react-icons/si'
+import { FaJava } from 'react-icons/fa'
 import { FiFileText } from 'react-icons/fi'
 
 export const LANG_COLORS = {
@@ -26,5 +27,6 @@ export const getLangIcon = (lang, className = "") => {
   if (lang === 'cpp') return <SiCplusplus className={`text-[#00599C] ${className}`} />
   if (lang === 'javascript') return <SiJavascript className={`text-[#F7DF1E] bg-black rounded-sm ${className}`} />
   if (lang === 'typescript') return <SiTypescript className={`text-[#3178C6] bg-white rounded-sm ${className}`} />
+  if (lang === 'java') return <FaJava className={`text-[#E76F00] ${className}`} />
   return <FiFileText className={`text-slate-300 ${className}`} />
 }
