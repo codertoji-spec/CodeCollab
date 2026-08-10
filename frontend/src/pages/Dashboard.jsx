@@ -8,6 +8,7 @@ import ShinyText from '../components/ShinyText'
 import Carousel from '../components/Carousel'
 import { SiJavascript, SiPython, SiCplusplus, SiTypescript } from 'react-icons/si'
 import { FiFileText, FiHome, FiUsers, FiGlobe, FiPlus, FiLogIn, FiArrowRight, FiShield, FiTerminal, FiMoreVertical, FiCalendar, FiClock, FiZap, FiCode } from 'react-icons/fi'
+import { formatUsername } from '../utils/format'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -144,7 +145,7 @@ export default function Dashboard() {
                 <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
               ) : (
                 <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner">
-                  {user?.username?.[0]?.toUpperCase()}
+                  {formatUsername(user?.username)?.[0]?.toUpperCase()}
                 </div>
               )}
             </div>
@@ -171,7 +172,7 @@ export default function Dashboard() {
         <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-start">
           <div className="mb-12 text-left w-full">
             <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md">
-              Welcome back, {user?.username}
+              Welcome back, {formatUsername(user?.username)}
             </h1>
             <p className="text-slate-400 text-lg">Create a workspace or continue coding with your team.</p>
           </div>
