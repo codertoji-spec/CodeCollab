@@ -78,7 +78,7 @@ export default function Dashboard() {
 
   const handleDeleteRoom = async (roomId) => {
     try {
-      await API.delete(`/rooms/${roomId}`, authHeader())
+      await axios.delete(`${API}/rooms/${roomId}`, authHeader())
       setRooms(rooms.filter(r => r.id !== roomId))
       setActiveDropdown(null)
     } catch (err) {
