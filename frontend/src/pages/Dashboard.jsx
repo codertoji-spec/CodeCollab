@@ -6,7 +6,8 @@ import LiquidEther from '../components/LiquidEther'
 import WarpText from '../components/WarpText'
 import ShinyText from '../components/ShinyText'
 import Carousel from '../components/Carousel'
-import { FiCode, FiTerminal, FiHash, FiFileText } from 'react-icons/fi'
+import { SiJavascript, SiPython, SiCplusplus, SiTypescript } from 'react-icons/si'
+import { FiFileText } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -27,10 +28,10 @@ const authHeader = () => ({
 })
 
 const getLangIcon = (lang, className = "") => {
-  if (lang === 'python') return <FiHash className={`text-blue-400 ${className}`} />
-  if (lang === 'cpp') return <FiTerminal className={`text-purple-400 ${className}`} />
-  if (lang === 'javascript') return <FiCode className={`text-yellow-400 ${className}`} />
-  if (lang === 'typescript') return <FiCode className={`text-blue-300 ${className}`} />
+  if (lang === 'python') return <SiPython className={`text-[#3776AB] ${className}`} />
+  if (lang === 'cpp') return <SiCplusplus className={`text-[#00599C] ${className}`} />
+  if (lang === 'javascript') return <SiJavascript className={`text-[#F7DF1E] bg-black rounded-sm ${className}`} />
+  if (lang === 'typescript') return <SiTypescript className={`text-[#3178C6] bg-white rounded-sm ${className}`} />
   return <FiFileText className={`text-slate-300 ${className}`} />
 }
 
@@ -269,10 +270,7 @@ export default function Dashboard() {
                     id: room.id,
                     title: room.name,
                     description: `Language: ${room.language.charAt(0).toUpperCase() + room.language.slice(1)}\nCreated: ${new Date(room.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`,
-                    icon: room.language === 'python' ? <FiHash className="carousel-icon text-blue-400" /> 
-                        : room.language === 'cpp' ? <FiTerminal className="carousel-icon text-purple-400" />
-                        : room.language === 'javascript' ? <FiCode className="carousel-icon text-yellow-400" />
-                        : <FiFileText className="carousel-icon text-slate-300" />,
+                    icon: getLangIcon(room.language, "carousel-icon"),
                     onClick: () => enterRoom(room)
                   }))}
                 />
