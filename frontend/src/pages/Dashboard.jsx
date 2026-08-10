@@ -106,7 +106,7 @@ export default function Dashboard() {
               CodeCollab
             </span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
             <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg">
               {user?.avatar_url ? (
                 <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
