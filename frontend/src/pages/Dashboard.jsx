@@ -320,7 +320,8 @@ export default function Dashboard() {
 
                       <div className="mb-8">
                         <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
-                        <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
+                        <div className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
+                          {getLangIcon(room.language, "w-3.5 h-3.5")}
                           {room.language.charAt(0).toUpperCase() + room.language.slice(1)}
                         </div>
                       </div>
