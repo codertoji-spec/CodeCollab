@@ -21,6 +21,7 @@ export default function MyRooms() {
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [shareModal, setShareModal] = useState(null)
+  const [activeDropdown, setActiveDropdown] = useState(null)
 
   useEffect(() => {
     fetchRooms()
@@ -45,6 +46,24 @@ export default function MyRooms() {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
   }
+
+  const handleDeleteRoom = async (roomId) => {
+    try {
+      await API.delete(`/rooms/${roomId}`, authHeader())
+      setRooms(rooms.filter(r => r.id !== roomId))
+      setActiveDropdown(null)
+    } catch (err) {
+      console.error('Delete room error:', err)
+      alert('Failed to delete room.')
+    }
+  }
+
+  // Close dropdown if clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveDropdown(null)
+    window.addEventListener('click', handleClickOutside)
+    return () => window.removeEventListener('click', handleClickOutside)
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#0f0f13] flex flex-col relative overflow-hidden font-sans">
@@ -132,9 +151,31 @@ export default function MyRooms() {
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
                         {getLangIcon(room.language, "w-6 h-6")}
                       </div>
-                      <button className="text-slate-500 hover:text-white transition-colors mt-1" onClick={e => { e.stopPropagation(); setShareModal(room); }}>
-                        <FiMoreVertical className="w-5 h-5" />
-                      </button>
+                      <div className="relative">
+                        <button 
+                          className="text-slate-500 hover:text-white transition-colors mt-1" 
+                          onClick={e => { e.stopPropagation(); setActiveDropdown(activeDropdown === room.id ? null : room.id); }}
+                        >
+                          <FiMoreVertical className="w-5 h-5" />
+                        </button>
+                        
+                        {activeDropdown === room.id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-10 animate-in fade-in zoom-in-95 duration-100">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setShareModal(room); setActiveDropdown(null); }}
+                              className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              Share Workspace
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id); }}
+                              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
+                            >
+                              Delete Room
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="mb-8">

@@ -160,4 +160,22 @@ const getSnapshots = async (req, res) => {
   }
 };
 
-module.exports = { createRoom, joinRoom, listRooms, saveSnapshot, getSnapshots };
+const deleteRoom = async (req, res) => {
+  const { roomId } = req.params;
+  try {
+    const isCreator = await pool.query('SELECT id FROM rooms WHERE id = $1 AND created_by = $2', [roomId, req.user.id]);
+    if (isCreator.rows.length > 0) {
+      await pool.query('DELETE FROM code_snapshots WHERE room_id = $1', [roomId]);
+      await pool.query('DELETE FROM room_participants WHERE room_id = $1', [roomId]);
+      await pool.query('DELETE FROM rooms WHERE id = $1', [roomId]);
+    } else {
+      await pool.query('DELETE FROM room_participants WHERE room_id = $1 AND user_id = $2', [roomId, req.user.id]);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete room error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+module.exports = { createRoom, joinRoom, listRooms, saveSnapshot, getSnapshots, deleteRoom };
