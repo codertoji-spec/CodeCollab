@@ -69,9 +69,6 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link to="/dashboard" className="text-slate-300 hover:text-white font-medium mr-4 transition-colors">
-                  Dashboard
-                </Link>
                 <div className="flex items-center gap-0">
                   <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
                     {user?.avatar_url ? (
