@@ -24,6 +24,16 @@ const LANG_COLORS = {
   rust: 'text-orange-500',
 }
 
+const LANG_THEME = {
+  javascript: { bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
+  python: { bg: 'bg-blue-500/10', text: 'text-blue-400' },
+  java: { bg: 'bg-orange-500/10', text: 'text-orange-400' },
+  cpp: { bg: 'bg-purple-500/10', text: 'text-purple-400' },
+  typescript: { bg: 'bg-blue-400/10', text: 'text-blue-300' },
+  go: { bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
+  rust: { bg: 'bg-orange-600/10', text: 'text-orange-500' },
+}
+
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('cc_token')}` }
 })
@@ -293,45 +303,46 @@ export default function Dashboard() {
               </div>
 
               {rooms.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 custom-scrollbar overflow-x-auto pb-4">
-                  {rooms.map(room => (
-                    <div key={room.id} className="bg-[#121016] border border-white/5 rounded-2xl p-5 flex flex-col hover:border-white/10 transition-colors shadow-xl min-w-[240px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 custom-scrollbar overflow-x-auto pb-4">
+                  {rooms.slice(0, 3).map(room => {
+                    const theme = LANG_THEME[room.language] || { bg: 'bg-slate-500/10', text: 'text-slate-400' };
+                    return (
+                    <div key={room.id} className="bg-[#121016] border border-white/5 rounded-3xl p-6 flex flex-col hover:border-white/10 transition-colors shadow-xl min-w-[280px]">
                       
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="w-10 h-10 bg-[#2D2342] rounded-xl flex items-center justify-center text-[#A78BFA]">
-                          <FiTerminal className="w-5 h-5" />
+                      <div className="flex items-start justify-between mb-8">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
+                          <FiTerminal className="w-6 h-6" />
                         </div>
-                        <button className="text-slate-500 hover:text-white transition-colors" onClick={e => { e.stopPropagation(); setShareModal(room); }}>
+                        <button className="text-slate-500 hover:text-white transition-colors mt-1" onClick={e => { e.stopPropagation(); setShareModal(room); }}>
                           <FiMoreVertical className="w-5 h-5" />
                         </button>
                       </div>
 
-                      <div className="mb-6">
-                        <h3 className="font-bold text-lg text-white truncate mb-2">{room.name}</h3>
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/40 border border-white/5 text-xs font-semibold ${LANG_COLORS[room.language] || 'text-slate-400'}`}>
-                          {getLangIcon(room.language, "w-3 h-3")}
+                      <div className="mb-8">
+                        <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
+                        <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
                           {room.language.charAt(0).toUpperCase() + room.language.slice(1)}
                         </div>
                       </div>
 
                       <div className="mt-auto">
-                        <div className="flex items-center gap-4 text-xs text-slate-500 font-medium mb-4">
-                          <div className="flex items-center gap-1.5">
-                            <FiCalendar className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-5 text-xs text-slate-500 font-medium mb-6">
+                          <div className="flex items-center gap-2">
+                            <FiCalendar className="w-4 h-4" />
                             {new Date(room.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <FiClock className="w-3.5 h-3.5" />
+                          <div className="flex items-center gap-2">
+                            <FiClock className="w-4 h-4" />
                             {new Date(room.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                           </div>
                         </div>
 
-                        <button onClick={() => enterRoom(room)} className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors">
-                          Open Room <FiArrowRight className="w-4 h-4" />
+                        <button onClick={() => enterRoom(room)} className="w-full py-3.5 bg-[#1a1a24] hover:bg-[#22222e] text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 transition-colors border border-white/5">
+                          Open Room <FiArrowRight className="w-4 h-4 text-[#A78BFA]" />
                         </button>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full min-h-[300px] bg-[#121016] border border-white/5 rounded-3xl p-12">
