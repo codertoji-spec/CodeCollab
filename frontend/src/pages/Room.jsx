@@ -350,7 +350,7 @@ export default function Room() {
       setOutput(result)
       socketRef.current?.emit('execution-result', { roomId, result })
     } catch (err) {
-      const result = { output: '', error: err.response?.data?.error || 'Execution failed', exitCode: 1 }
+      const result = { output: '', error: err.response?.data?.error || err.message || 'Execution failed', exitCode: 1 }
       setOutput(result)
       socketRef.current?.emit('execution-result', { roomId, result })
     } finally {
