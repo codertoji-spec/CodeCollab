@@ -26,6 +26,14 @@ const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('cc_token')}` }
 })
 
+const getLangIcon = (lang, className = "") => {
+  if (lang === 'python') return <FiHash className={`text-blue-400 ${className}`} />
+  if (lang === 'cpp') return <FiTerminal className={`text-purple-400 ${className}`} />
+  if (lang === 'javascript') return <FiCode className={`text-yellow-400 ${className}`} />
+  if (lang === 'typescript') return <FiCode className={`text-blue-300 ${className}`} />
+  return <FiFileText className={`text-slate-300 ${className}`} />
+}
+
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -199,15 +207,25 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <label className="block text-slate-300 text-sm font-semibold mb-2">Primary Language</label>
-                      <select
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
-                        value={createForm.language}
-                        onChange={e => setCreateForm(f => ({ ...f, language: e.target.value }))}
-                      >
-                        {LANGUAGES.map(l => (
-                          <option key={l} value={l} className="bg-dark-900 text-white">{l.charAt(0).toUpperCase() + l.slice(1)}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
+                          {getLangIcon(createForm.language)}
+                        </div>
+                        <select
+                          className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
+                          value={createForm.language}
+                          onChange={e => setCreateForm(f => ({ ...f, language: e.target.value }))}
+                        >
+                          {LANGUAGES.map(l => (
+                            <option key={l} value={l} className="bg-dark-900 text-white">{l.charAt(0).toUpperCase() + l.slice(1)}</option>
+                          ))}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                     <button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-slate-200 font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-white/20 active:scale-[0.98] mt-2">
                       {loading ? 'Initializing...' : 'Launch Workspace'}
