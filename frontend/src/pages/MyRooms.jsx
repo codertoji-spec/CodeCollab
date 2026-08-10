@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import ShinyText from '../components/ShinyText'
+import WarpText from '../components/WarpText'
 import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiTerminal } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
@@ -14,7 +15,7 @@ const authHeader = () => ({
 })
 
 export default function MyRooms() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
@@ -41,6 +42,9 @@ export default function MyRooms() {
 
   return (
     <div className="min-h-screen bg-[#0f0f13] flex flex-col relative overflow-hidden font-sans">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+      
       <div className="relative z-10 flex flex-col h-full flex-1 pointer-events-none">
         
         {/* Navbar */}
@@ -77,6 +81,11 @@ export default function MyRooms() {
                 </div>
               )}
             </div>
+            <button onClick={logout} className="relative z-10 -ml-4 flex items-center h-10 px-4 pl-6 bg-white/5 hover:bg-red-500/10 text-white hover:text-red-400 rounded-r-full font-medium transition-all group overflow-hidden border border-white/5 border-l-0">
+              <span className="relative z-10">
+                <WarpText text="Sign Out" />
+              </span>
+            </button>
           </div>
         </nav>
 
