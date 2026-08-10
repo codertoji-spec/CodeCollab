@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import LiquidEther from '../components/LiquidEther'
@@ -124,13 +124,15 @@ export default function Dashboard() {
         {/* Navbar */}
         <nav className="flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/5 pointer-events-auto">
           <div className="flex items-center gap-3">
-            <ShinyText
-              text="CodeCollab"
-              speed={2.5}
-              color="#b5b5b5"
-              shineColor="#ffffff"
-              className="text-2xl font-extrabold tracking-tight cursor-default"
-            />
+            <Link to="/">
+              <ShinyText
+                text="CodeCollab"
+                speed={2.5}
+                color="#b5b5b5"
+                shineColor="#ffffff"
+                className="text-2xl font-extrabold tracking-tight cursor-default hover:opacity-80 transition-opacity"
+              />
+            </Link>
           </div>
 
           {/* Center Nav Items */}

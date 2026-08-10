@@ -4,6 +4,8 @@ import ParticleText from '../components/ParticleText'
 import WarpText from '../components/WarpText'
 import GradientWaves from '../components/GradientWaves'
 import SpecularButton from '../components/SpecularButton'
+import { useAuth } from '../context/AuthContext'
+import { formatUsername } from '../utils/format'
 
 const hslToHex = (h, s, l) => {
   l /= 100;
@@ -18,6 +20,7 @@ const hslToHex = (h, s, l) => {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [hue, setHue] = useState(0);
 
   useEffect(() => {
@@ -64,22 +67,57 @@ export default function Landing() {
         {/* Navbar */}
         <nav className="flex items-center justify-end px-8 py-5 pointer-events-auto">
           <div className="flex items-center gap-3">
-            <Link to="/login" className="relative block" style={{ width: '120px', height: '50px' }}>
-              <WarpText
-                text="Sign In"
-                color="#ffffff"
-                warpStrength={0.08}
-                warpScale={1.7}
-                speed={0.55}
-                pointerInfluence={0.42}
-                pointerStrength={0.38}
-                refraction={0.018}
-                ripple={true}
-                fontSize="1.1rem"
-                fontWeight={700}
-                style={{ width: '100%', height: '100%', minHeight: 'auto' }}
-              />
-            </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard" className="text-slate-300 hover:text-white font-medium mr-4 transition-colors">
+                  Dashboard
+                </Link>
+                <div className="flex items-center gap-0">
+                  <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                        {formatUsername(user?.username)?.[0]?.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform -ml-4 z-10" style={{ width: '100px', height: '50px' }}>
+                    <WarpText
+                      text="Sign Out"
+                      color="#ffffff"
+                      warpStrength={0.08}
+                      warpScale={1.7}
+                      speed={0.55}
+                      pointerInfluence={0.42}
+                      pointerStrength={0.38}
+                      refraction={0.018}
+                      ripple={true}
+                      fontSize="1.1rem"
+                      fontWeight={700}
+                      style={{ width: '100%', height: '100%', minHeight: 'auto' }}
+                    />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <Link to="/login" className="relative block" style={{ width: '120px', height: '50px' }}>
+                <WarpText
+                  text="Sign In"
+                  color="#ffffff"
+                  warpStrength={0.08}
+                  warpScale={1.7}
+                  speed={0.55}
+                  pointerInfluence={0.42}
+                  pointerStrength={0.38}
+                  refraction={0.018}
+                  ripple={true}
+                  fontSize="1.1rem"
+                  fontWeight={700}
+                  style={{ width: '100%', height: '100%', minHeight: 'auto' }}
+                />
+              </Link>
+            )}
           </div>
         </nav>
 
