@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [joinCode, setJoinCode] = useState('')
   const [shareModal, setShareModal] = useState(null)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -87,9 +88,15 @@ export default function Dashboard() {
     }
   }
 
-  // Close dropdown if clicking outside
+  // Close dropdowns if clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setActiveDropdown(null)
+    const handleClickOutside = (e) => {
+      // Don't close language dropdown if clicking inside it
+      if (!e.target.closest('.lang-select-container')) {
+        setLangDropdownOpen(false)
+      }
+      setActiveDropdown(null)
+    }
     window.addEventListener('click', handleClickOutside)
     return () => window.removeEventListener('click', handleClickOutside)
   }, [])
@@ -225,24 +232,44 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <label className="block text-slate-300 text-sm font-semibold mb-2">Primary Language</label>
-                      <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
-                          {getLangIcon(createForm.language)}
-                        </div>
-                        <select
-                          className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
-                          value={createForm.language}
-                          onChange={e => setCreateForm(f => ({ ...f, language: e.target.value }))}
+                      <div className="relative lang-select-container">
+                        <div 
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer text-white hover:border-purple-500/50 transition-all select-none"
+                          onClick={(e) => { e.stopPropagation(); setLangDropdownOpen(!langDropdownOpen); }}
                         >
-                          {LANGUAGES.map(l => (
-                            <option key={l} value={l} className="bg-dark-900 text-white">{l.charAt(0).toUpperCase() + l.slice(1)}</option>
-                          ))}
-                        </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg flex items-center justify-center w-6">{getLangIcon(createForm.language)}</span>
+                            <span>{createForm.language.charAt(0).toUpperCase() + createForm.language.slice(1)}</span>
+                          </div>
+                          <div className="text-slate-400">
+                            <svg className={`w-5 h-5 transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
                         </div>
+                        
+                        {langDropdownOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100 max-h-60 overflow-y-auto">
+                            {LANGUAGES.map(l => (
+                              <div
+                                key={l}
+                                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${createForm.language === l ? 'bg-purple-500/20 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}
+                                onClick={() => {
+                                  setCreateForm(f => ({ ...f, language: l }))
+                                  setLangDropdownOpen(false)
+                                }}
+                              >
+                                <span className="text-lg flex items-center justify-center w-6">{getLangIcon(l)}</span>
+                                <span>{l.charAt(0).toUpperCase() + l.slice(1)}</span>
+                                {createForm.language === l && (
+                                  <svg className="w-4 h-4 ml-auto text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <button type="submit" disabled={loading} className="w-full bg-[#6D28D9] text-white hover:bg-[#5B21B6] font-bold py-3.5 flex items-center justify-center gap-2 rounded-xl transition-all shadow-lg hover:shadow-purple-500/20 active:scale-[0.98] mt-4">
