@@ -179,7 +179,7 @@ export default function Dashboard() {
         </nav>
 
         {/* Dashboard Content */}
-        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-start">
+        <div className="flex-1 max-w-[1400px] mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-start">
           <div className="mb-12 text-left w-full">
             <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md">
               Welcome back, {formatUsername(user?.username)}
@@ -190,7 +190,7 @@ export default function Dashboard() {
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             
             {/* Left Column - Actions */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
+            <div className="lg:col-span-4 flex flex-col gap-6">
               
               {/* Tab Selector */}
               <div className="flex bg-[#121016] p-1.5 rounded-2xl shadow-inner border border-white/5">
@@ -294,7 +294,7 @@ export default function Dashboard() {
             </div>
 
             {/* Right Column - Recent Rooms Cards */}
-            <div className="lg:col-span-7 flex flex-col w-full h-full">
+            <div className="lg:col-span-8 flex flex-col w-full h-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Recent Rooms</h2>
                 <button className="text-sm font-semibold text-[#A78BFA] hover:text-[#C4B5FD] flex items-center gap-1 transition-colors">
@@ -303,11 +303,11 @@ export default function Dashboard() {
               </div>
 
               {rooms.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 custom-scrollbar overflow-x-auto pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {rooms.slice(0, 3).map(room => {
                     const theme = LANG_THEME[room.language] || { bg: 'bg-slate-500/10', text: 'text-slate-400' };
                     return (
-                    <div key={room.id} className="bg-[#121016] border border-white/5 rounded-3xl p-6 flex flex-col hover:border-white/10 transition-colors shadow-xl min-w-[280px]">
+                    <div key={room.id} className="bg-[#121016] border border-white/5 rounded-3xl p-6 flex flex-col hover:border-white/10 transition-colors shadow-xl w-full">
                       
                       <div className="flex items-start justify-between mb-8">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
