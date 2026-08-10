@@ -202,6 +202,10 @@ io.on('connection', (socket) => {
         [roomId, code, `Before switch to ${language}`, userId]
       ).catch(err => console.error('[Snapshot] language-change error:', err.message));
     }
+
+    // Persist the new language to the database so it shows up in Dashboard
+    pool.query('UPDATE rooms SET language = $1 WHERE id = $2', [language, roomId])
+      .catch(err => console.error('[DB] Error updating room language:', err.message));
   });
 
   socket.on('cursor-move', ({ roomId, position, selection }) => {

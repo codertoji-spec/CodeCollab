@@ -348,7 +348,17 @@ export default function Room() {
 
   // ── Language change ───────────────────────────────────────────────────────
   const handleLanguageChange = (newLang) => {
-    if (!isEditor) return
+    if (!isEditor || newLang === language) return
+
+    const currentCode = getCode().trim()
+    const isDefaultCode = Object.values(DEFAULT_CODE).some(def => def.trim() === currentCode)
+
+    if (currentCode && !isDefaultCode) {
+      if (!window.confirm(`Are you sure you want to change the language to ${newLang}? This will replace your current code with the default template.`)) {
+        return
+      }
+    }
+
     setLanguage(newLang)
     setYjsCode(DEFAULT_CODE[newLang] || '')
     socketRef.current?.emit('language-change', { roomId, language: newLang })
