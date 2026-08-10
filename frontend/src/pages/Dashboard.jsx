@@ -107,15 +107,14 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+            <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg">
               {user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-6 h-6 rounded-full" />
+                <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
               ) : (
-                <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner">
                   {user?.username?.[0]?.toUpperCase()}
                 </div>
               )}
-              <span className="text-slate-200 text-sm font-medium pr-1">{user?.username}</span>
             </div>
             <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform" style={{ width: '120px', height: '50px' }}>
               <WarpText
