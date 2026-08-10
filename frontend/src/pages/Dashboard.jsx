@@ -7,7 +7,7 @@ import WarpText from '../components/WarpText'
 import ShinyText from '../components/ShinyText'
 import Carousel from '../components/Carousel'
 import { SiJavascript, SiPython, SiCplusplus, SiTypescript } from 'react-icons/si'
-import { FiFileText } from 'react-icons/fi'
+import { FiFileText, FiHome, FiUsers, FiGlobe } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -121,6 +121,22 @@ export default function Dashboard() {
               shineColor="#ffffff"
               className="text-2xl font-extrabold tracking-tight cursor-default"
             />
+          </div>
+
+          {/* Center Nav Items */}
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 bg-[#1A1625] px-2 py-1.5 rounded-2xl border border-white/5">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[#2D2342] text-[#A78BFA] rounded-xl font-medium text-sm transition-all shadow-inner">
+              <FiHome className="w-4 h-4" />
+              Dashboard
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium text-sm transition-all">
+              <FiUsers className="w-4 h-4" />
+              My Rooms
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium text-sm transition-all">
+              <FiGlobe className="w-4 h-4" />
+              Explore
+            </button>
           </div>
           <div className="flex items-center gap-0">
             <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
