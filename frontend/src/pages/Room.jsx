@@ -30,8 +30,42 @@ const CURSOR_COLORS = [
   '#6366f1', '#10b981', '#f59e0b', '#ef4444',
   '#06b6d4', '#ec4899', '#8b5cf6', '#f97316',
 ]
+const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('cc_token')}` })
 
+// ─── Cursor CSS helpers ────────────────────────────────────────────────────────
+const injectedStyles = new Set()
 
+function injectCursorStyle(socketId, color, username) {
+  const safe = socketId.replace(/[^a-zA-Z0-9]/g, '_')
+  const styleId = `cc-cursor-${safe}`
+  document.getElementById(styleId)?.remove()
+  injectedStyles.delete(socketId)
+  injectedStyles.add(socketId)
+  const style = document.createElement('style')
+  style.id = styleId
+  style.innerHTML = `
+    .cc-cursor-${safe} {
+      border-left: 2px solid ${color} !important;
+      position: relative !important;
+    }
+    .cc-cursor-${safe}::before {
+      content: "${username.replace(/"/g, '')}";
+      position: absolute; top: -17px; left: -2px;
+      background: ${color}; color: #fff;
+      font-size: 10px; font-family: 'Space Grotesk', system-ui, sans-serif;
+      font-weight: 600; padding: 1px 6px 2px;
+      border-radius: 3px 3px 3px 0px;
+      white-space: nowrap; line-height: 1.5;
+      pointer-events: none; z-index: 9999;
+      letter-spacing: 0.02em;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .cc-selection-${safe} { background: ${color}30 !important; }
+  `
+  document.head.appendChild(style)
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function Room() {
   const { roomId } = useParams()
   const location = useLocation()
