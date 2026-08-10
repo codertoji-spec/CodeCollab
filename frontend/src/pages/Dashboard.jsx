@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import LiquidEther from '../components/LiquidEther'
 import WarpText from '../components/WarpText'
+import ShinyText from '../components/ShinyText'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -102,9 +103,13 @@ export default function Dashboard() {
         {/* Navbar */}
         <nav className="flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/5 pointer-events-auto">
           <div className="flex items-center gap-3">
-            <span className="font-bold tracking-tight text-lg bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-              CodeCollab
-            </span>
+            <ShinyText
+              text="CodeCollab"
+              speed={2.5}
+              color="#b5b5b5"
+              shineColor="#ffffff"
+              className="text-2xl font-extrabold tracking-tight cursor-default"
+            />
           </div>
           <div className="flex items-center gap-0">
             <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
