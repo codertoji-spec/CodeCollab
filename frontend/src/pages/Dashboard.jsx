@@ -311,7 +311,7 @@ export default function Dashboard() {
                       
                       <div className="flex items-start justify-between mb-8">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
-                          <FiTerminal className="w-6 h-6" />
+                          {getLangIcon(room.language, "w-6 h-6")}
                         </div>
                         <button className="text-slate-500 hover:text-white transition-colors mt-1" onClick={e => { e.stopPropagation(); setShareModal(room); }}>
                           <FiMoreVertical className="w-5 h-5" />
@@ -320,8 +320,7 @@ export default function Dashboard() {
 
                       <div className="mb-8">
                         <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
-                        <div className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
-                          {getLangIcon(room.language, "w-3.5 h-3.5")}
+                        <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
                           {room.language.charAt(0).toUpperCase() + room.language.slice(1)}
                         </div>
                       </div>
