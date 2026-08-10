@@ -372,7 +372,7 @@ export default function Room() {
   return (
     <div className="h-screen bg-dark-900 flex flex-col overflow-hidden">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-2.5 glass-nav flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 glass-nav flex-shrink-0 relative z-50">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard')}
