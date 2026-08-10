@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
+import MyRooms from './pages/MyRooms'
 import Room from './pages/Room'
 import GoogleSuccess from './pages/GoogleSuccess'
 import Landing from './pages/Landing'
@@ -36,6 +37,7 @@ function App() {
           <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/auth/google/success" element={<GoogleSuccess />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/my-rooms" element={<PrivateRoute><MyRooms /></PrivateRoute>} />
           <Route path="/room/:roomId" element={<PrivateRoute><Room /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

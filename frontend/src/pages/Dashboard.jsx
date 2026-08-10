@@ -6,45 +6,17 @@ import LiquidEther from '../components/LiquidEther'
 import WarpText from '../components/WarpText'
 import ShinyText from '../components/ShinyText'
 import Carousel from '../components/Carousel'
-import { SiJavascript, SiPython, SiCplusplus, SiTypescript } from 'react-icons/si'
 import { FiFileText, FiHome, FiUsers, FiGlobe, FiPlus, FiLogIn, FiArrowRight, FiShield, FiTerminal, FiMoreVertical, FiCalendar, FiClock, FiZap, FiCode } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
+import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const LANGUAGES = ['javascript', 'python', 'cpp', 'typescript']
 
-const LANG_COLORS = {
-  javascript: 'text-yellow-400',
-  python: 'text-blue-400',
-  java: 'text-orange-400',
-  cpp: 'text-purple-400',
-  typescript: 'text-blue-300',
-  go: 'text-cyan-400',
-  rust: 'text-orange-500',
-}
-
-const LANG_THEME = {
-  javascript: { bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
-  python: { bg: 'bg-blue-500/10', text: 'text-blue-400' },
-  java: { bg: 'bg-orange-500/10', text: 'text-orange-400' },
-  cpp: { bg: 'bg-purple-500/10', text: 'text-purple-400' },
-  typescript: { bg: 'bg-blue-400/10', text: 'text-blue-300' },
-  go: { bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
-  rust: { bg: 'bg-orange-600/10', text: 'text-orange-500' },
-}
-
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('cc_token')}` }
 })
-
-const getLangIcon = (lang, className = "") => {
-  if (lang === 'python') return <SiPython className={`text-[#3776AB] ${className}`} />
-  if (lang === 'cpp') return <SiCplusplus className={`text-[#00599C] ${className}`} />
-  if (lang === 'javascript') return <SiJavascript className={`text-[#F7DF1E] bg-black rounded-sm ${className}`} />
-  if (lang === 'typescript') return <SiTypescript className={`text-[#3178C6] bg-white rounded-sm ${className}`} />
-  return <FiFileText className={`text-slate-300 ${className}`} />
-}
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
@@ -140,7 +112,7 @@ export default function Dashboard() {
               <FiHome className="w-4 h-4" />
               Dashboard
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium text-sm transition-all">
+            <button onClick={() => navigate('/my-rooms')} className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium text-sm transition-all">
               <FiUsers className="w-4 h-4" />
               My Rooms
             </button>
@@ -293,7 +265,7 @@ export default function Dashboard() {
             <div className="lg:col-span-8 flex flex-col w-full h-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Recent Rooms</h2>
-                <button className="text-sm font-semibold text-[#A78BFA] hover:text-[#C4B5FD] flex items-center gap-1 transition-colors">
+                <button onClick={() => navigate('/my-rooms')} className="text-sm font-semibold text-[#A78BFA] hover:text-[#C4B5FD] flex items-center gap-1 transition-colors">
                   View all <FiArrowRight className="w-4 h-4" />
                 </button>
               </div>
