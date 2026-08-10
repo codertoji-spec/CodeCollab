@@ -169,7 +169,7 @@ io.on('connection', (socket) => {
       socket.emit('yjs-init', Buffer.from(yjsState));
     }
 
-    socket.to(roomId).emit('user-joined', { socketId: socket.id, userId, username, role });
+    socket.to(roomId).emit('user-joined', { socketId: socket.id, userId, username, role: actualRole });
     io.to(roomId).emit('users-update', Array.from(meta.users.values()));
   });
 
