@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [shareModal, setShareModal] = useState(null)
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [langDropdownOpen, setLangDropdownOpen] = useState(false)
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -95,6 +96,9 @@ export default function Dashboard() {
       if (!e.target.closest('.lang-select-container')) {
         setLangDropdownOpen(false)
       }
+      if (!e.target.closest('.profile-dropdown-container')) {
+        setProfileDropdownOpen(false)
+      }
       setActiveDropdown(null)
     }
     window.addEventListener('click', handleClickOutside)
@@ -146,32 +150,37 @@ export default function Dashboard() {
               particleCount={9}
             />
           </div>
-          <div className="flex items-center gap-0">
-            <div className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20">
+          <div className="flex items-center relative profile-dropdown-container">
+            <div 
+              className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors"
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            >
               {user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover pointer-events-none" />
               ) : (
-                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner pointer-events-none">
                   {formatUsername(user?.username)?.[0]?.toUpperCase()}
                 </div>
               )}
             </div>
-            <button onClick={logout} className="relative block cursor-pointer active:scale-95 transition-transform -ml-4 z-10" style={{ width: '100px', height: '50px' }}>
-              <WarpText
-                text="Sign Out"
-                color="#ffffff"
-                warpStrength={0.08}
-                warpScale={1.7}
-                speed={0.55}
-                pointerInfluence={0.42}
-                pointerStrength={0.38}
-                refraction={0.018}
-                ripple={true}
-                fontSize="1.1rem"
-                fontWeight={700}
-                style={{ width: '100%', height: '100%', minHeight: 'auto' }}
-              />
-            </button>
+            
+            {profileDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-4 py-3 border-b border-white/5 mb-1">
+                  <p className="text-sm text-white font-medium truncate">{user?.username}</p>
+                  <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                </div>
+                <button 
+                  onClick={logout}
+                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </nav>
 
