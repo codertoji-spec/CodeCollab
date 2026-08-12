@@ -85,7 +85,6 @@ const LANG_MAP = {
 
   // ── Database ───────────────────────────────────────────────────────────────
   sql:          { language: 'sql',         versionIndex: '0' },
-  mongodb:      { language: 'mongodb',     versionIndex: '0' },
 };
 
 function jdoodlePost(body) {

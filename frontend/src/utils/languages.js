@@ -72,7 +72,6 @@ export const LANGUAGE_CONFIG = {
 
   // ── Database ───────────────────────────────────────────────────────────────
   sql:         { display: 'SQL',          monaco: 'sql',         category: 'Database' },
-  mongodb:     { display: 'MongoDB',      monaco: 'javascript',  category: 'Database' },
 }
 
 // Flat list of all language keys
@@ -154,5 +153,4 @@ export const DEFAULT_CODE = {
   brainfuck:   '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.\n',
   spidermonkey:'// Welcome to CodeCollab!\nprint("Hello, World!");\n',
   sql:         '-- Welcome to CodeCollab!\nSELECT \'Hello, World!\' AS greeting;\n',
-  mongodb:     '// Welcome to CodeCollab!\ndb.hello.insertOne({ message: "Hello, World!" });\ndb.hello.find().forEach(printjson);\n',
 }

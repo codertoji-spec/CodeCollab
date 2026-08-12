@@ -73,7 +73,6 @@ const LANGS = {
 
   // ── Database ───────────────────────────────────────────────────────────────
   sql: true,
-  mongodb: true,
 };
 
 const ALIASES = {
