@@ -8,6 +8,7 @@ import GooeyNav from '../components/GooeyNav'
 import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiTerminal } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
+import { getLangDisplay } from '../utils/languages'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -193,7 +194,7 @@ export default function MyRooms() {
                       <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
                       <div className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
                         {getLangIcon(room.language, "w-3.5 h-3.5")}
-                        {room.language.charAt(0).toUpperCase() + room.language.slice(1)}
+                        {getLangDisplay(room.language)}
                       </div>
                     </div>
 

@@ -8,23 +8,10 @@ import { MonacoBinding } from 'y-monaco'
 import { useAuth } from '../context/AuthContext'
 import VersionHistory from '../components/VersionHistory'
 import { getLangIcon } from '../utils/icons'
+import { LANGUAGES, LANGUAGE_CONFIG, DEFAULT_CODE, getMonacoLang, getLangDisplay, getLanguagesByCategory, CATEGORIES } from '../utils/languages'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
-
-const LANGUAGES = ['javascript', 'python', 'cpp', 'java', 'typescript']
-const MONACO_LANG = {
-  cpp: 'cpp', javascript: 'javascript', python: 'python',
-  typescript: 'typescript', java: 'java'
-}
-
-const DEFAULT_CODE = {
-  javascript: '// Welcome to CodeCollab!\nconsole.log("Hello, World!");\n',
-  python: '# Welcome to CodeCollab!\nprint("Hello, World!")\n',
-  cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}\n',
-  typescript: '// Welcome to CodeCollab!\nconsole.log("Hello, World!");\n',
-  java: 'public class Solution {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}\n',
-}
 
 const CURSOR_COLORS = [
   '#6366f1', '#10b981', '#f59e0b', '#ef4444',
@@ -469,7 +456,7 @@ export default function Room() {
             >
               <div className="flex items-center gap-2">
                 <span className="flex items-center justify-center w-4 h-4">{getLangIcon(language)}</span>
-                <span>{language.charAt(0).toUpperCase() + language.slice(1)}</span>
+                <span>{getLangDisplay(language)}</span>
               </div>
               <svg className={`w-3.5 h-3.5 ml-2 text-slate-400 transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -477,20 +464,32 @@ export default function Room() {
             </div>
 
             {langDropdownOpen && isEditor && (
-              <div className="absolute top-full left-0 mt-1.5 bg-[#1A1625] border border-white/10 rounded-lg shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 min-w-[140px]">
-                {LANGUAGES.map(l => (
-                  <div
-                    key={l}
-                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors text-xs ${language === l ? 'bg-purple-500/20 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}
-                    onClick={() => {
-                      handleLanguageChange(l)
-                      setLangDropdownOpen(false)
-                    }}
-                  >
-                    <span className="flex items-center justify-center w-4 h-4">{getLangIcon(l)}</span>
-                    <span>{l.charAt(0).toUpperCase() + l.slice(1)}</span>
-                  </div>
-                ))}
+              <div className="absolute top-full left-0 mt-1.5 bg-[#1A1625] border border-white/10 rounded-lg shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 min-w-[200px] max-h-[400px] overflow-y-auto">
+                {(() => {
+                  const grouped = getLanguagesByCategory()
+                  return CATEGORIES.map(cat => {
+                    const langs = grouped[cat]
+                    if (!langs || langs.length === 0) return null
+                    return (
+                      <div key={cat}>
+                        <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider sticky top-0 bg-[#1A1625] border-b border-white/5">{cat}</div>
+                        {langs.map(l => (
+                          <div
+                            key={l}
+                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors text-xs ${language === l ? 'bg-purple-500/20 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}
+                            onClick={() => {
+                              handleLanguageChange(l)
+                              setLangDropdownOpen(false)
+                            }}
+                          >
+                            <span className="flex items-center justify-center w-4 h-4">{getLangIcon(l)}</span>
+                            <span>{getLangDisplay(l)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })
+                })()}
               </div>
             )}
           </div>
@@ -549,7 +548,7 @@ export default function Room() {
           <div className="flex-1 overflow-hidden">
             <Editor
               height="100%"
-              language={MONACO_LANG[language] || 'javascript'}
+              language={getMonacoLang(language)}
               onMount={handleEditorMount}
               theme="vs-dark"
               options={{

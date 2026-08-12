@@ -10,10 +10,9 @@ import GooeyNav from '../components/GooeyNav'
 import { FiFileText, FiHome, FiUsers, FiGlobe, FiPlus, FiLogIn, FiArrowRight, FiShield, FiTerminal, FiMoreVertical, FiCalendar, FiClock, FiZap, FiCode } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
+import { LANGUAGES, getLangDisplay, getLanguagesByCategory, CATEGORIES } from '../utils/languages'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-
-const LANGUAGES = ['javascript', 'python', 'cpp', 'java', 'typescript']
 
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('cc_token')}` }
@@ -250,7 +249,7 @@ export default function Dashboard() {
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-lg flex items-center justify-center w-6">{getLangIcon(createForm.language)}</span>
-                            <span>{createForm.language.charAt(0).toUpperCase() + createForm.language.slice(1)}</span>
+                            <span>{getLangDisplay(createForm.language)}</span>
                           </div>
                           <div className="text-slate-400">
                             <svg className={`w-5 h-5 transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -260,25 +259,37 @@ export default function Dashboard() {
                         </div>
                         
                         {langDropdownOpen && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100 max-h-60 overflow-y-auto">
-                            {LANGUAGES.map(l => (
-                              <div
-                                key={l}
-                                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${createForm.language === l ? 'bg-purple-500/20 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}
-                                onClick={() => {
-                                  setCreateForm(f => ({ ...f, language: l }))
-                                  setLangDropdownOpen(false)
-                                }}
-                              >
-                                <span className="text-lg flex items-center justify-center w-6">{getLangIcon(l)}</span>
-                                <span>{l.charAt(0).toUpperCase() + l.slice(1)}</span>
-                                {createForm.language === l && (
-                                  <svg className="w-4 h-4 ml-auto text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                )}
-                              </div>
-                            ))}
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100 max-h-72 overflow-y-auto">
+                            {(() => {
+                              const grouped = getLanguagesByCategory()
+                              return CATEGORIES.map(cat => {
+                                const langs = grouped[cat]
+                                if (!langs || langs.length === 0) return null
+                                return (
+                                  <div key={cat}>
+                                    <div className="px-4 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider sticky top-0 bg-[#1A1625] border-b border-white/5">{cat}</div>
+                                    {langs.map(l => (
+                                      <div
+                                        key={l}
+                                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${createForm.language === l ? 'bg-purple-500/20 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}
+                                        onClick={() => {
+                                          setCreateForm(f => ({ ...f, language: l }))
+                                          setLangDropdownOpen(false)
+                                        }}
+                                      >
+                                        <span className="text-lg flex items-center justify-center w-6">{getLangIcon(l)}</span>
+                                        <span>{getLangDisplay(l)}</span>
+                                        {createForm.language === l && (
+                                          <svg className="w-4 h-4 ml-auto text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )
+                              })
+                            })()}
                           </div>
                         )}
                       </div>
@@ -369,7 +380,7 @@ export default function Dashboard() {
                       <div className="mb-8">
                         <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
                         <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
-                          {room.language.charAt(0).toUpperCase() + room.language.slice(1)}
+                          {getLangDisplay(room.language)}
                         </div>
                       </div>
 
