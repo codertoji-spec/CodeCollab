@@ -4,21 +4,76 @@
  * Execution itself happens via JDoodle's hosted API (see
  * services/executionService.js) — this file only tracks which language
  * keys are valid and normalizes aliases/casing for the incoming request.
- *
- * A per-language Docker sandbox (image build + compile/run commands per
- * language) was scoped as a future self-hosted alternative to JDoodle —
- * see backend/sandbox/README.md. That config lived here previously but
- * was never read by the current execution path, so it's been removed to
- * avoid implying this server spawns containers when it doesn't.
  */
 const LANGS = {
+  // ── Popular ────────────────────────────────────────────────────────────────
   javascript: true,
-  typescript: true,
   python: true,
+  java: true,
   cpp: true,
+  c: true,
+  typescript: true,
+  csharp: true,
   go: true,
   rust: true,
-  java: true,
+  kotlin: true,
+  swift: true,
+  ruby: true,
+  php: true,
+  dart: true,
+
+  // ── Scripting ──────────────────────────────────────────────────────────────
+  bash: true,
+  perl: true,
+  lua: true,
+  r: true,
+  coffeescript: true,
+  tcl: true,
+  octave: true,
+
+  // ── Functional ─────────────────────────────────────────────────────────────
+  haskell: true,
+  scala: true,
+  elixir: true,
+  erlang: true,
+  clojure: true,
+  fsharp: true,
+  ocaml: true,
+  racket: true,
+  scheme: true,
+  lisp: true,
+  sml: true,
+
+  // ── Systems ────────────────────────────────────────────────────────────────
+  nasm: true,
+  objectivec: true,
+  d: true,
+  nim: true,
+  zig: true,
+  ada: true,
+  fortran: true,
+  pascal: true,
+  cobol: true,
+
+  // ── JVM & .NET ─────────────────────────────────────────────────────────────
+  groovy: true,
+  vb: true,
+
+  // ── Logic & Academic ───────────────────────────────────────────────────────
+  prolog: true,
+  julia: true,
+  crystal: true,
+  smalltalk: true,
+  factor: true,
+  icon: true,
+  pike: true,
+  lolcode: true,
+  brainfuck: true,
+  spidermonkey: true,
+
+  // ── Database ───────────────────────────────────────────────────────────────
+  sql: true,
+  mongodb: true,
 };
 
 const ALIASES = {
@@ -28,7 +83,18 @@ const ALIASES = {
   'c++': 'cpp', cxx: 'cpp', cc: 'cpp',
   golang: 'go',
   rs: 'rust',
-  java: 'java',
+  'c#': 'csharp', cs: 'csharp', dotnet: 'csharp',
+  kt: 'kotlin',
+  rb: 'ruby',
+  sh: 'bash', shell: 'bash',
+  pl: 'perl',
+  hs: 'haskell',
+  fs: 'fsharp', 'f#': 'fsharp',
+  ml: 'ocaml',
+  asm: 'nasm', assembly: 'nasm',
+  objc: 'objectivec', 'objective-c': 'objectivec',
+  bf: 'brainfuck',
+  'vb.net': 'vb', vbnet: 'vb',
 };
 
 const normalizeLang = (lang) => {
