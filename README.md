@@ -1,4 +1,4 @@
-# CodeCollab 🚀
+# CodeCollab 
 
 Real-time collaborative code editor. Multiple developers edit code simultaneously, see live cursors, chat, and run code — all in the browser.
 
