@@ -27,7 +27,7 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
 **Real-time Sync:** Yjs CRDT  
-**Execution:** JDoodle API (C++17, Python, JavaScript, TypeScript, Java)  
+**Execution:** JDoodle API (60+ languages)  
 **Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
@@ -39,7 +39,7 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
-| Code execution | 5 languages via JDoodle API (C++, Python, JS, TS, Java) |
+| Code execution | 60+ languages via JDoodle API (see full list below) |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Workspace history | Dedicated "My Rooms" page tracking all past workspaces |
 | Integrated chat | Typing indicators + system messages |
@@ -47,6 +47,21 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Auth | Email/password + Google OAuth, JWT-based |
 | Password Reset | Brevo HTTP API (bypasses Render SMTP firewalls) with stateless single-use JWTs |
 | UI/UX | Premium Glassmorphic design, GooeyNav, WarpText, animated backgrounds |
+
+### Supported Languages (60+)
+
+Languages are organized into categories in the dropdown selector:
+
+| Category | Languages |
+|----------|-----------|
+| **Popular** | JavaScript, Python 3, Java, C++, C, TypeScript, C#, Go, Rust, Kotlin, Swift, Ruby, PHP, Dart |
+| **Scripting** | Bash, Perl, Lua, R, CoffeeScript, Tcl, Octave |
+| **Functional** | Haskell, Scala, Elixir, Erlang, Clojure, F#, OCaml, Racket, Scheme, Lisp, SML |
+| **Systems** | Assembly (NASM), Objective-C, D, Nim, Zig, Ada, Fortran, Pascal, COBOL |
+| **JVM & .NET** | Groovy, VB.NET |
+| **Academic** | Prolog, Julia, Crystal, Smalltalk, Factor, Icon, Pike, LOLCODE, Brainfuck, SpiderMonkey |
+| **Database** | SQL |
+
 ---
 
 ## Local Setup
@@ -59,7 +74,7 @@ cd CodeCollab
 ### Backend
 ```bash
 cd backend
-cp .env.example .env   # fill in values — JDOODLE_CLIENT_ID/SECRET are required, server won't start without them
+cp .env.example .env   # fill in values — JDOODLE_CLIENT_ID/SECRET are required for code execution
 npm install
 node src/index.js
 ```
@@ -107,7 +122,7 @@ VITE_SOCKET_URL=http://localhost:5000
 | Database | Supabase | PostgreSQL (connection pooler) |
 
 > **Note:** Code execution uses JDoodle API (200 req/day free tier).  
-> Run button works for all 4 languages in the deployed version.
+> Run button works for all 60+ languages in the deployed version.
 
 ---
 
@@ -119,7 +134,7 @@ flowchart LR
     BE["Backend<br/>Express + Socket.io<br/>(Render)"]
     YJS["Yjs Doc<br/>(in-memory per room)"]
     PG["PostgreSQL<br/>(Supabase)"]
-    JD["JDoodle API<br/>(code execution)"]
+    JD["JDoodle API<br/>(60+ languages)"]
 
     FE -- "HTTP REST (auth, rooms, snapshots)" --> BE
     FE <-- "WebSocket (live cursors, chat, CRDT updates)" --> BE
@@ -145,16 +160,48 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
 
 ---
 
+## Project Structure
+
+```
+CodeCollab/
+├── backend/
+│   └── src/
+│       ├── index.js                 # Express + Socket.io server, event handlers
+│       ├── controllers/
+│       │   ├── authController.js    # Login, register, Google OAuth
+│       │   ├── executeController.js # Code execution endpoint
+│       │   └── roomController.js    # Room CRUD, snapshots
+│       ├── routes/                  # REST API routes
+│       ├── services/
+│       │   ├── executionService.js  # JDoodle API integration (60+ lang)
+│       │   ├── langConfig.js        # Language whitelist + aliases
+│       │   └── yjsManager.js        # Yjs document management
+│       └── middleware/              # Auth middleware
+├── frontend/
+│   └── src/
+│       ├── pages/
+│       │   ├── Landing.jsx          # Homepage with animated background
+│       │   ├── Dashboard.jsx        # Room creation, recent rooms
+│       │   ├── MyRooms.jsx          # All user rooms
+│       │   ├── Room.jsx             # Collaborative editor
+│       │   └── Login.jsx            # Auth page
+│       ├── components/              # Reusable UI components
+│       ├── context/AuthContext.jsx   # Auth state management
+│       └── utils/
+│           ├── languages.js         # Central language config (60+ langs)
+│           ├── icons.jsx            # Language icons + theme colors
+│           └── format.js            # Display utilities
+└── README.md
+```
+
+---
+
 ## Known Limitations
 
 - **JDoodle free tier: 200 requests/day** across the whole deployed app. Once
   hit, the Run button will return an execution error until the quota resets.
   A self-hosted per-language Docker sandbox was scoped as the fix (see
   `backend/sandbox/README.md`) but isn't wired up yet.
-- **Go, Rust, and Java are wired up server-side** (`executionService.js`
-  already maps them to JDoodle) but not yet exposed in the language dropdown
-  (`Dashboard.jsx`/`Room.jsx` only list javascript/python/cpp/typescript) —
-  adding them to the UI is a small follow-up, not a backend change.
 - **No self-hosted execution sandbox yet** — all code execution is fully
   outsourced to JDoodle's infrastructure; nothing runs untrusted code on this
   server.
@@ -178,7 +225,7 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
 | `yjs-init` | S→C | Full Yjs state on join |
 | `yjs-update` | C↔S | Binary CRDT update |
 | `users-update` | S→C | Updated user list |
-| `language-change` | C↔S | Language switch |
+| `language-change` | C↔S | Language switch (persisted to DB) |
 | `cursor-move` / `cursor-update` | C↔S | Remote cursors |
 | `chat-message` | C↔S | Chat |
 | `typing` / `typing-update` | C↔S | Typing indicator |
@@ -212,6 +259,6 @@ cd backend && npm test
 ```
 
 | Suite | What it tests |
-|-------|--------------|
+|-------|----|
 | `auth.test.js` | Token cache, invalidation, bad tokens |
 | `yjsManager.test.js` | Race condition fix, doc creation, update roundtrip |
