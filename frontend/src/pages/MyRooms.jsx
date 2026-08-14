@@ -95,7 +95,7 @@ export default function MyRooms() {
           <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 bg-[#1A1625] px-4 py-2 rounded-[2rem] border border-white/5">
             <GooeyNav 
               items={[
-                { label: "Dashboard", href: "/", icon: <FiHome className="w-4 h-4" /> },
+                { label: "Dashboard", href: "/dashboard", icon: <FiHome className="w-4 h-4" /> },
                 { label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }
               ]} 
               initialActiveIndex={1}
