@@ -101,7 +101,7 @@ export default function Landing() {
                         <p className="text-xs text-slate-400 truncate">{user?.email}</p>
                       </div>
                       <button 
-                        onClick={logout}
+                        onClick={(e) => { e.stopPropagation(); logout(); }}
                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors flex items-center gap-2"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
