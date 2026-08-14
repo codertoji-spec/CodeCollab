@@ -13,12 +13,24 @@ export default function Login() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const { login, register } = useAuth()
-  const [view, setView] = useState('login') // 'login', 'signup', 'forgot'
+  const [view, setView] = useState('login') // 'login', 'signup', 'forgot', 'otp'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [otp, setOtp] = useState('')
+  const [resendTimer, setResendTimer] = useState(0)
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' })
   const [runtimeError, setRuntimeError] = useState('')
+
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,14 +41,53 @@ export default function Login() {
         await login(email, password);
         navigate('/dashboard');
       } catch (err) {
-        setStatusMessage({ type: 'error', text: err.response?.data?.error || 'Login failed' });
+        if (err.response?.data?.requireOtp) {
+          setView('otp');
+          setStatusMessage({ type: 'error', text: 'Please verify your email to continue.' });
+        } else {
+          setStatusMessage({ type: 'error', text: err.response?.data?.error || 'Login failed' });
+        }
       }
     } else if (view === 'signup') {
       try {
-        await register(username, email, password);
-        navigate('/dashboard');
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        
+        if (res.ok && data.requireOtp) {
+           setView('otp');
+           setStatusMessage({ type: 'success', text: data.message || 'OTP sent to your email.' });
+           setResendTimer(60);
+        } else if (res.ok) {
+           // fallback for existing logic
+           await login(email, password);
+           navigate('/dashboard');
+        } else {
+           setStatusMessage({ type: 'error', text: data.error || 'Signup failed' });
+        }
       } catch (err) {
-        setStatusMessage({ type: 'error', text: err.response?.data?.error || 'Signup failed' });
+        setStatusMessage({ type: 'error', text: 'Signup failed' });
+      }
+    } else if (view === 'otp') {
+      try {
+        const res = await fetch(`${API}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          // Small hack to reload the AuthContext with the new token
+          window.location.href = '/dashboard';
+        } else {
+          setStatusMessage({ type: 'error', text: data.error || 'Verification failed' });
+        }
+      } catch (err) {
+        setStatusMessage({ type: 'error', text: 'Network error' });
       }
     } else if (view === 'forgot') {
       try {
@@ -54,6 +105,27 @@ export default function Login() {
       } catch (err) {
         setStatusMessage({ type: 'error', text: 'Network error' });
       }
+    }
+  }
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setStatusMessage({ type: '', text: '' });
+    try {
+      const res = await fetch(`${API}/auth/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatusMessage({ type: 'success', text: 'A new OTP has been sent to your email.' });
+        setResendTimer(60);
+      } else {
+        setStatusMessage({ type: 'error', text: data.error || 'Failed to resend OTP' });
+      }
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: 'Network error' });
     }
   }
 
@@ -90,7 +162,7 @@ export default function Login() {
           <div className="text-center -mb-8 fade-in-up flex flex-col items-center relative z-20 pointer-events-none">
             <div className="w-full flex justify-center pointer-events-auto" style={{ height: '160px', marginTop: '-20px' }}>
               <WarpText
-                text={view === 'login' ? 'WELCOME BACK' : view === 'signup' ? 'CREATE ACCOUNT' : 'RESET PASSWORD'}
+                text={view === 'login' ? 'WELCOME BACK' : view === 'signup' ? 'CREATE ACCOUNT' : view === 'otp' ? 'VERIFY EMAIL' : 'RESET PASSWORD'}
                 color="#cbd5e1"
                 warpStrength={0.05}
                 warpScale={1.5}
@@ -135,18 +207,42 @@ export default function Login() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider ml-1">Email</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#5227FF]/60 focus:border-[#5227FF] transition-all duration-300"
-                />
-              </div>
+              {view === 'otp' ? (
+                <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider ml-1">Verification Code</label>
+                  <input 
+                    type="text" 
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="123456"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#5227FF]/60 focus:border-[#5227FF] transition-all duration-300 tracking-widest text-center text-xl"
+                    maxLength={6}
+                  />
+                  <div className="flex justify-end mt-1">
+                    <button 
+                      type="button" 
+                      onClick={handleResendOtp}
+                      disabled={resendTimer > 0}
+                      className={`text-xs ${resendTimer > 0 ? 'text-slate-500' : 'text-[#5227FF] hover:text-[#FF9FFC]'} transition-colors`}
+                    >
+                      {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider ml-1">Email</label>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#5227FF]/60 focus:border-[#5227FF] transition-all duration-300"
+                  />
+                </div>
+              )}
 
-              {view !== 'forgot' && (
+              {view !== 'forgot' && view !== 'otp' && (
                 <div className="flex flex-col gap-1.5 animate-in fade-in duration-300">
                   <div className="flex justify-between items-center ml-1">
                     <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Password</label>
@@ -170,11 +266,11 @@ export default function Login() {
                 type="submit"
                 className="w-full mt-2 bg-gradient-to-r from-[#5227FF] to-[#8a2be2] hover:from-[#6b44ff] hover:to-[#9b4dff] text-white font-semibold py-3.5 rounded-xl shadow-[0_0_20px_rgba(82,39,255,0.4)] hover:shadow-[0_0_25px_rgba(82,39,255,0.6)] transition-all duration-300 transform hover:-translate-y-0.5"
               >
-                {view === 'login' ? 'Sign In' : view === 'signup' ? 'Create Account' : 'Send Reset Link'}
+                {view === 'login' ? 'Sign In' : view === 'signup' ? 'Create Account' : view === 'otp' ? 'Verify Email' : 'Send Reset Link'}
               </button>
             </form>
 
-            {view !== 'forgot' && (
+            {view !== 'forgot' && view !== 'otp' && (
               <>
                 <div className="flex items-center gap-3 my-6 animate-in fade-in duration-300">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/10"></div>
@@ -220,6 +316,14 @@ export default function Login() {
                     Remembered your password?{' '}
                     <button onClick={() => { setView('login'); setStatusMessage({type: '', text: ''}); }} className="text-[#5227FF] hover:text-[#FF9FFC] font-semibold transition-colors">
                       Back to sign in
+                    </button>
+                  </>
+                )}
+                {view === 'otp' && (
+                  <>
+                    Incorrect email?{' '}
+                    <button onClick={() => { setView('signup'); setStatusMessage({type: '', text: ''}); }} className="text-[#5227FF] hover:text-[#FF9FFC] font-semibold transition-colors">
+                      Back to sign up
                     </button>
                   </>
                 )}

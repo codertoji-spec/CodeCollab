@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(255),
   google_id VARCHAR(255),
   avatar_url TEXT,
+  is_verified BOOLEAN DEFAULT FALSE,
+  otp VARCHAR(6),
+  otp_expires_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -69,3 +72,7 @@ ALTER TABLE room_participants ADD COLUMN IF NOT EXISTS role VARCHAR(10) NOT NULL
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_room_saved
   ON code_snapshots (room_id, saved_at DESC);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT TRUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(6);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP;

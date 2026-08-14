@@ -20,13 +20,43 @@ const register = async (req, res) => {
       return res.status(409).json({ error: 'Email or username already exists' });
     }
     const hash = await bcrypt.hash(password, 12);
+    
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     const result = await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, avatar_url, created_at',
-      [username, email, hash]
+      'INSERT INTO users (username, email, password_hash, is_verified, otp, otp_expires_at) VALUES ($1, $2, $3, false, $4, $5) RETURNING id, username, email, avatar_url, created_at',
+      [username, email, hash, otp, otp_expires_at]
     );
     const user = result.rows[0];
-    const token = generateToken(user.id, 1);
-    res.status(201).json({ token, user });
+
+    // Send OTP via Brevo
+    try {
+      await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender: { 
+            email: process.env.EMAIL_USER || 'codecollab.noreply@gmail.com', 
+            name: 'CodeCollab' 
+          },
+          to: [{ email }],
+          subject: 'Verify your CodeCollab Account',
+          htmlContent: `<p>Hello ${username},</p><p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`
+        },
+        {
+          headers: {
+            'api-key': process.env.BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Brevo error sending OTP:', error.response?.data || error.message);
+      // We still return success but maybe log the error
+    }
+
+    res.status(201).json({ message: 'OTP sent to email', requireOtp: true, email: user.email });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -45,11 +75,117 @@ const login = async (req, res) => {
     if (!user.password_hash) return res.status(401).json({ error: 'Please use Google sign-in' });
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
+    
+    if (user.is_verified === false) {
+       return res.status(403).json({ error: 'Account not verified', requireOtp: true, email: user.email });
+    }
+
     const token = generateToken(user.id, user.token_version || 1);
-    const { password_hash, token_version, ...safeUser } = user;
+    const { password_hash, token_version, otp, otp_expires_at, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
     console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ error: 'Email and OTP required' });
+  }
+
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    
+    if (user.is_verified) {
+      return res.status(400).json({ error: 'Account already verified' });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+
+    if (new Date() > new Date(user.otp_expires_at)) {
+      return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
+    }
+
+    // Verify user
+    await pool.query(
+      'UPDATE users SET is_verified = true, otp = null, otp_expires_at = null WHERE email = $1',
+      [email]
+    );
+
+    const token = generateToken(user.id, user.token_version || 1);
+    const { password_hash, token_version, otp: oldOtp, otp_expires_at, ...safeUser } = user;
+    safeUser.is_verified = true;
+    
+    res.json({ token, user: safeUser });
+  } catch (err) {
+    console.error('Verify OTP error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const resendOtp = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const result = await pool.query('SELECT id, username, is_verified FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+    
+    if (user.is_verified) {
+      return res.status(400).json({ error: 'Account already verified' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await pool.query(
+      'UPDATE users SET otp = $1, otp_expires_at = $2 WHERE email = $3',
+      [otp, otp_expires_at, email]
+    );
+
+    // Send OTP via Brevo
+    try {
+      await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender: { 
+            email: process.env.EMAIL_USER || 'codecollab.noreply@gmail.com', 
+            name: 'CodeCollab' 
+          },
+          to: [{ email }],
+          subject: 'Your new verification code',
+          htmlContent: `<p>Hello ${user.username},</p><p>Your new verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`
+        },
+        {
+          headers: {
+            'api-key': process.env.BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Brevo error sending OTP:', error.response?.data || error.message);
+      return res.status(500).json({ error: 'Failed to send OTP email' });
+    }
+
+    res.json({ message: 'OTP resent successfully' });
+  } catch (err) {
+    console.error('Resend OTP error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -152,4 +288,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, googleCallback, forgotPassword, resetPassword };
+module.exports = { register, login, verifyOtp, resendOtp, getMe, googleCallback, forgotPassword, resetPassword };
