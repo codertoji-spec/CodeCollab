@@ -42,10 +42,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'your_googl
         }
         const username = profile.displayName.replace(/\s+/g, '_').toLowerCase() + '_' + Math.random().toString(36).substr(2, 4);
         const newUser = await pool.query(
-          'INSERT INTO users (username, email, google_id, avatar_url) VALUES ($1, $2, $3, $4) RETURNING *',
+          'INSERT INTO users (username, email, google_id, avatar_url, is_verified) VALUES ($1, $2, $3, $4, true) RETURNING *',
           [username, email, profile.id, avatarUrl]
         );
-        return done(null, newUser.rows[0]);
+        const user = newUser.rows[0];
+        user.isNewGoogleUser = true;
+        return done(null, user);
       } catch (err) {
         return done(err);
       }

@@ -9,9 +9,14 @@ export default function GoogleSuccess() {
 
   useEffect(() => {
     const token = params.get('token')
+    const isNew = params.get('isNew')
     if (token) {
       setTokenUser(token)
-      navigate('/dashboard', { replace: true })
+      if (isNew) {
+        navigate(`/setup-username?token=${token}`, { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     } else {
       navigate('/login?error=google_failed', { replace: true })
     }

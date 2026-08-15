@@ -8,6 +8,8 @@ import Room from './pages/Room'
 import GoogleSuccess from './pages/GoogleSuccess'
 import Landing from './pages/Landing'
 
+import SetupUsername from './pages/SetupUsername'
+
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
   if (loading) return (
@@ -35,6 +37,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+          <Route path="/setup-username" element={<SetupUsername />} />
           <Route path="/auth/google/success" element={<GoogleSuccess />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/my-rooms" element={<PrivateRoute><MyRooms /></PrivateRoute>} />

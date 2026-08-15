@@ -197,7 +197,26 @@ const getMe = async (req, res) => {
 
 const googleCallback = (req, res) => {
   const token = generateToken(req.user.id, req.user.token_version || 1);
-  res.redirect(`${process.env.CLIENT_URL}/auth/google/success?token=${token}`);
+  const isNew = req.user.isNewGoogleUser ? '&isNew=true' : '';
+  res.redirect(`${process.env.CLIENT_URL}/auth/google/success?token=${token}${isNew}`);
+};
+
+const setUsername = async (req, res) => {
+  const { username } = req.body;
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+  try {
+    const existing = await pool.query('SELECT id FROM users WHERE username = $1 AND id != $2', [username, req.user.id]);
+    if (existing.rows[0]) {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+    await pool.query('UPDATE users SET username = $1 WHERE id = $2', [username, req.user.id]);
+    res.json({ message: 'Username updated successfully' });
+  } catch (err) {
+    console.error('Set username error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
 
@@ -288,4 +307,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verifyOtp, resendOtp, getMe, googleCallback, forgotPassword, resetPassword };
+module.exports = { register, login, verifyOtp, resendOtp, getMe, googleCallback, setUsername, forgotPassword, resetPassword };
