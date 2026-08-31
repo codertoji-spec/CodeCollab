@@ -10,6 +10,8 @@ const EXEC_TIMEOUT_MS = parseInt(process.env.EXEC_TIMEOUT_MS || '15000', 10);
 const ACCOUNTS = [
   { id: process.env.JDOODLE_CLIENT_ID_1, secret: process.env.JDOODLE_CLIENT_SECRET_1, name: 'Account 1', exhaustedUntil: 0 },
   { id: process.env.JDOODLE_CLIENT_ID_2, secret: process.env.JDOODLE_CLIENT_SECRET_2, name: 'Account 2', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_3, secret: process.env.JDOODLE_CLIENT_SECRET_3, name: 'Account 3', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_4, secret: process.env.JDOODLE_CLIENT_SECRET_4, name: 'Account 4', exhaustedUntil: 0 },
 ].filter(a => a.id && a.secret);
 
 // Fallback to legacy env vars if new ones are not set

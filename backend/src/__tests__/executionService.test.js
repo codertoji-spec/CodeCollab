@@ -5,6 +5,10 @@ process.env.JDOODLE_CLIENT_ID_1 = 'test_id_1';
 process.env.JDOODLE_CLIENT_SECRET_1 = 'test_secret_1';
 process.env.JDOODLE_CLIENT_ID_2 = 'test_id_2';
 process.env.JDOODLE_CLIENT_SECRET_2 = 'test_secret_2';
+process.env.JDOODLE_CLIENT_ID_3 = 'test_id_3';
+process.env.JDOODLE_CLIENT_SECRET_3 = 'test_secret_3';
+process.env.JDOODLE_CLIENT_ID_4 = 'test_id_4';
+process.env.JDOODLE_CLIENT_SECRET_4 = 'test_secret_4';
 
 const executionService = require('../services/executionService');
 
@@ -113,8 +117,10 @@ describe('executionService JDoodle Failover', () => {
     expect(https.request).toHaveBeenCalledTimes(2);
   });
 
-  it('Both accounts fail -> meaningful error returned', async () => {
+  it('All accounts fail -> meaningful error returned', async () => {
     mockHttpsRequest([
+      { data: { error: 'Daily limit reached' }, statusCode: 429 },
+      { data: { error: 'Daily limit reached' }, statusCode: 429 },
       { data: { error: 'Daily limit reached' }, statusCode: 429 },
       { data: { error: 'Daily limit reached' }, statusCode: 429 },
     ]);
@@ -122,7 +128,7 @@ describe('executionService JDoodle Failover', () => {
     const result = await executionService.run({ language: 'python', code: 'print("Failed")' });
     
     expect(result.error).toContain('Execution API error after trying available accounts: API Error: Daily limit reached');
-    expect(https.request).toHaveBeenCalledTimes(2);
+    expect(https.request).toHaveBeenCalledTimes(4);
   });
   
   it('Credentials are never exposed in returned responses/logs', async () => {
