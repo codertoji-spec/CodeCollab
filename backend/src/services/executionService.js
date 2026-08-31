@@ -1,22 +1,33 @@
 /**
  * executionService.js — JDoodle API backend (temporary)
+ * Updated with robust JDoodle API key failover.
  */
 
 const https = require('https');
 
 const EXEC_TIMEOUT_MS = parseInt(process.env.EXEC_TIMEOUT_MS || '15000', 10);
-const CLIENT_ID     = process.env.JDOODLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.JDOODLE_CLIENT_SECRET;
 
-if (!CLIENT_ID || !CLIENT_SECRET) {
+const ACCOUNTS = [
+  { id: process.env.JDOODLE_CLIENT_ID_1, secret: process.env.JDOODLE_CLIENT_SECRET_1, name: 'Account 1', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_2, secret: process.env.JDOODLE_CLIENT_SECRET_2, name: 'Account 2', exhaustedUntil: 0 },
+].filter(a => a.id && a.secret);
+
+// Fallback to legacy env vars if new ones are not set
+if (ACCOUNTS.length === 0 && process.env.JDOODLE_CLIENT_ID && process.env.JDOODLE_CLIENT_SECRET) {
+  ACCOUNTS.push({ id: process.env.JDOODLE_CLIENT_ID, secret: process.env.JDOODLE_CLIENT_SECRET, name: 'Legacy Account', exhaustedUntil: 0 });
+}
+
+if (ACCOUNTS.length === 0) {
   console.warn(
-    'WARNING: JDOODLE_CLIENT_ID and JDOODLE_CLIENT_SECRET are not set in backend/.env. ' +
+    'WARNING: JDoodle client credentials are not set in backend/.env. ' +
     'Code execution will be disabled until they are configured.'
   );
 }
 
+const COOLDOWN_PERIOD_MS = 60 * 60 * 1000; // 1 hour
+
 const LANG_MAP = {
-  // ── Popular (original 7 kept at confirmed working versions) ────────────────
+  // ── Popular ────────────────────────────────────────────────────────────────
   javascript:   { language: 'nodejs',      versionIndex: '4' },
   python:       { language: 'python3',     versionIndex: '4' },
   java:         { language: 'java',        versionIndex: '4' },
@@ -106,7 +117,7 @@ function jdoodlePost(body) {
       res.on('data', c => d += c);
       res.on('end', () => {
         clearTimeout(timer);
-        try { resolve(JSON.parse(d)); }
+        try { resolve({ status: res.statusCode, data: JSON.parse(d) }); }
         catch (e) { reject(new Error('Parse error: ' + d.slice(0, 200))); }
       });
     });
@@ -116,11 +127,55 @@ function jdoodlePost(body) {
   });
 }
 
+function getAvailableAccount() {
+  const now = Date.now();
+  for (const account of ACCOUNTS) {
+    if (account.exhaustedUntil < now) {
+      return account;
+    }
+  }
+  return null;
+}
+
+function markAccountExhausted(account) {
+  console.log(`[JDoodle] ${account.name} quota/rate limit detected -> switching. Cooldown applied.`);
+  account.exhaustedUntil = Date.now() + COOLDOWN_PERIOD_MS;
+}
+
+async function executeWithAccount(account, lang, code, stdin) {
+  console.log(`[JDoodle] ${account.name} selected`);
+  const response = await jdoodlePost({
+    clientId: account.id,
+    clientSecret: account.secret,
+    script: code,
+    stdin: stdin || '',
+    language: lang.language,
+    versionIndex: lang.versionIndex,
+  });
+
+  const result = response.data;
+  
+  // Distinguish between JDoodle API failures and actual code execution results.
+  // JDoodle API failures (quota, unauthorized) often include an 'error' field or non-200 status.
+  // Normal compilation/runtime errors appear in result.output, and result.error is absent.
+  if (result.error || response.status !== 200) {
+    throw new Error(`API Error: ${result.error || `HTTP ${response.status}`}`);
+  }
+
+  return {
+    output: result.output || '',
+    error: '',
+    compilerMessage: '',
+    exitCode: result.statusCode || 0,
+    signal: null,
+  };
+}
+
 async function run({ language, code, stdin = '' }) {
   const lang = LANG_MAP[language];
   if (!lang) throw new Error(`Unsupported language: ${language}`);
 
-  if (!CLIENT_ID || !CLIENT_SECRET) {
+  if (ACCOUNTS.length === 0) {
     return { 
       output: '', 
       error: 'Code execution is disabled. Please configure JDoodle API keys in the backend/.env file to enable this feature.', 
@@ -130,31 +185,38 @@ async function run({ language, code, stdin = '' }) {
     };
   }
 
-  let result;
-  try {
-    result = await jdoodlePost({
-      clientId:     CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
-      script:       code,
-      stdin:        stdin || '',
-      language:     lang.language,
-      versionIndex: lang.versionIndex,
-    });
-  } catch (err) {
-    return { output: '', error: `Execution error: ${err.message}`, compilerMessage: '', exitCode: null, signal: null };
+  let lastError = null;
+
+  for (let attempt = 0; attempt < ACCOUNTS.length; attempt++) {
+    const account = getAvailableAccount();
+    
+    if (!account) {
+      console.log(`[JDoodle] Both/all accounts unavailable.`);
+      return { 
+        output: '', 
+        error: 'All JDoodle execution accounts are currently unavailable due to quota or rate-limits. Please try again later.', 
+        compilerMessage: '', 
+        exitCode: null, 
+        signal: null 
+      };
+    }
+
+    try {
+      return await executeWithAccount(account, lang, code, stdin);
+    } catch (err) {
+      lastError = err;
+      // Mark this account as exhausted and try the next one
+      markAccountExhausted(account);
+    }
   }
 
-  if (result.error) {
-    return { output: '', error: result.error, compilerMessage: '', exitCode: null, signal: null };
-  }
-
-  return {
-    output:          result.output || '',
-    error:           '',
-    compilerMessage: '',
-    exitCode:        result.statusCode || 0,
-    signal:          null,
+  return { 
+    output: '', 
+    error: `Execution API error after trying available accounts: ${lastError.message}`, 
+    compilerMessage: '', 
+    exitCode: null, 
+    signal: null 
   };
 }
 
-module.exports = { run };
+module.exports = { run, _ACCOUNTS: ACCOUNTS };
