@@ -41,7 +41,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/execute', executeRoutes);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', app: 'CodeCollab' }));
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'connected', app: 'CodeCollab' });
+  } catch (err) {
+    res.status(500).json({ status: 'error', db: err.message, app: 'CodeCollab' });
+  }
+});
 
 // ── Socket.io JWT auth middleware ─────────────────────────────────────────────
 // Token passed in socket.auth.token (handshake) — never trust client-sent userId.

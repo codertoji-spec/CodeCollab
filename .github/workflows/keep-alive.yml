@@ -1,0 +1,22 @@
+name: Keep-Alive Supabase & Render
+
+on:
+  schedule:
+    # Runs every 6 hours to ensure Supabase database and Render receive periodic traffic
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Backend & Database Health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/health
+        run: |
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "https://codecollab-gcgs.onrender.com/api/health")
+          echo "Response:"
+          echo "$RESPONSE"
+          STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Health check returned status $STATUS"
+          fi
