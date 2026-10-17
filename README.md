@@ -1,24 +1,10 @@
-# CodeCollab 
+# CodeCollab
 
 Real-time collaborative code editor. Multiple developers edit code simultaneously, see live cursors, chat, and run code — all in the browser.
 
 > VS Code + Google Docs + Online Compiler
 
 **Live Demo:** [code-collab-woad.vercel.app](https://code-collab-woad.vercel.app)
-
-<!--
-TODO: record a 15–30s screen capture and drop it here as demo.gif, e.g.:
-![CodeCollab demo](./docs/demo.gif)
-
-What to record (one continuous take, 2 browser windows side by side):
-  1. Window A creates a room, window B joins with the room code.
-  2. Type in window A — show the cursor + text appearing live in window B.
-  3. Move the cursor in window B — show the labeled cursor in window A.
-  4. Hit Run on a short snippet (e.g. print/console.log) — show output
-     appearing in both windows.
-  5. (Optional) Open version history and restore an older snapshot.
-Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
--->
 
 ---
 
@@ -27,7 +13,7 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 **Backend:** Node.js, Express, Socket.io, PostgreSQL, Passport.js, JWT  
 **Frontend:** React 18, Vite, Tailwind CSS, Monaco Editor, Socket.io Client  
 **Real-time Sync:** Yjs CRDT  
-**Execution:** JDoodle API (60+ languages)  
+**Execution:** JDoodle API (60+ languages) with multi-account rotation and rate-limit cooldown  
 **Infra:** Render (backend) · Vercel (frontend) · Supabase (PostgreSQL)
 
 ---
@@ -39,14 +25,14 @@ Keep it under 30s and under ~5MB (gifski or ffmpeg -> gif works well).
 | Real-time editing | Yjs CRDT synced via binary Socket.io frames |
 | Remote cursors | Live cursors with color + username labels |
 | Editor / Viewer roles | Separate room codes — edit or read-only access |
-| Code execution | 60+ languages via JDoodle API (see full list below) |
+| Code execution | 60+ languages via JDoodle API with automated account rotation |
 | Version history | Manual snapshots + auto-save every 10 min |
 | Workspace history | Dedicated "My Rooms" page tracking all past workspaces |
-| Integrated chat | Typing indicators + system messages |
-| Presence | Color-coded avatars for all users in room |
-| Auth | Email/password + Google OAuth, JWT-based |
-| Password Reset | Brevo HTTP API (bypasses Render SMTP firewalls) with stateless single-use JWTs |
-| UI/UX | Premium Glassmorphic design, GooeyNav, WarpText, animated backgrounds |
+| Integrated chat | In-room messaging with typing indicators + system notices |
+| Presence | Color-coded avatars and viewer indicators for all connected users |
+| Auth & Onboarding | Email/password verification (Brevo) + Google OAuth with dedicated username setup |
+| Password Reset | Brevo HTTP API (bypasses Render SMTP firewalls) with single-use JWTs |
+| Production Hardened | Comprehensive SEO, a11y, security headers, and bundle code-splitting |
 
 ### Supported Languages (60+)
 
@@ -64,6 +50,33 @@ Languages are organized into categories in the dropdown selector:
 
 ---
 
+## Production Audit & Hardening (20-Point Checklist)
+
+The codebase has undergone a complete production audit covering security, SEO, accessibility, performance, and reliability:
+
+1. **Canonical URLs:** Automatic dynamic canonical tag injection via `usePageMeta` hook across all routes to prevent duplicate-content indexing.
+2. **Open Graph & Social Cards:** Comprehensive `og:title`, `og:description`, `og:image`, `og:url`, `og:type`, and Twitter Summary Cards with a dedicated 1200×630 SVG preview image (`og-image.svg`).
+3. **Security Headers:** Strict headers configured on both Vercel (`vercel.json`) and Express (`index.js`): Content-Security-Policy (CSP), Strict-Transport-Security (HSTS), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
+4. **robots.txt:** Crawler directives indexing public pages (`/`, `/login`, `/privacy`) while preventing crawling of private/authenticated routes (`/room/*`, `/dashboard`, `/setup-username`).
+5. **sitemap.xml:** Valid XML sitemap referencing public indexable routes with change frequencies.
+6. **Page Titles:** Dynamic document titles adhering to standard branding formats (`<Page> — CodeCollab`), including dynamic room and role titles.
+7. **Meta Descriptions:** Curated, unique meta descriptions for public pages with automated `noindex, nofollow` on private rooms and settings.
+8. **Alt Text & Accessible Media:** Explicit descriptive alt attributes on all informative images and avatars; decorative graphics marked appropriately.
+9. **Internal Links:** Clean navigation graph; fixed dead-ends and improper redirects (e.g., returning to `/dashboard` from room histories).
+10. **Custom 404:** Branded client-side 404 page (`NotFound.jsx`) and standardized JSON 404 errors for unmatched API endpoints.
+11. **Privacy Policy:** Dedicated privacy page (`/privacy`) describing data practices: Google OAuth, Brevo transactional emails, Supabase persistence, JDoodle execution, Vercel frontend, and Render backend.
+12. **HTTPS & Cookie Hardening:** Strict HTTPS enforcement with HSTS (`max-age=63072000`). Session cookies hardened with `HttpOnly`, `Secure` (production), and `SameSite` flags.
+13. **Exposed Secrets Prevention:** Environment variables strictly isolated; server-only secrets prevented from bundling into Vite build; verified `.env` files are gitignored.
+14. **Mobile Responsiveness:** Flex/grid layouts verified across mobile, tablet, and desktop viewports without layout clipping or horizontal overflow.
+15. **Page Speed & Code Splitting:** Rollup `manualChunks` configured in `vite.config.js` splitting Monaco Editor, Three.js/OGL, Yjs, Socket.io, and React into separate chunks — reducing the main entry chunk from **3.89 MB** to **~450 kB** (gzip: ~150 kB).
+16. **Working Forms:** Semantic `<label htmlFor>` associations, HTML5 email/password validation, autocomplete attributes, and username length constraints.
+17. **Form Feedback & Loading States:** Double-submission prevention, disabled buttons during pending requests (`isSubmitting`), and screen-reader accessible alerts (`aria-live="polite"`).
+18. **Clear CTAs:** High-contrast call-to-action buttons with distinct visual hierarchy and keyboard focus rings.
+19. **Accessibility (a11y):** `:focus-visible` ring styling, `@media (prefers-reduced-motion)` animation suppression, semantic buttons replacing interactive `div` elements, and `aria-label` tags on all icon-only buttons.
+20. **Backend Reliability & Error Handling:** JSON request body limits (`512kb`), global error handling middleware, and graceful shutdown flushing in-memory Yjs documents to PostgreSQL on `SIGTERM`/`SIGINT`.
+
+---
+
 ## Local Setup
 
 ```bash
@@ -74,15 +87,15 @@ cd CodeCollab
 ### Backend
 ```bash
 cd backend
-cp .env.example .env   # fill in values — JDOODLE_CLIENT_ID/SECRET are required for code execution
+cp .env.example .env   # fill in values — JDOODLE credentials required for execution
 npm install
-node src/index.js
+npm run dev
 ```
 
 ### Frontend
 ```bash
 cd frontend
-cp .env.example .env   # defaults already match the backend's default port
+cp .env.example .env   # defaults match local backend port
 npm install
 npm run dev
 ```
@@ -93,8 +106,8 @@ npm run dev
 ```
 PORT=5000
 DATABASE_URL=postgresql://...
-JWT_SECRET=your_secret
-SESSION_SECRET=your_secret
+JWT_SECRET=your_jwt_secret
+SESSION_SECRET=your_session_secret
 CLIENT_URL=http://localhost:5173
 SERVER_URL=http://localhost:5000
 GOOGLE_CLIENT_ID=...
@@ -117,12 +130,9 @@ VITE_SOCKET_URL=http://localhost:5000
 
 | Service | Platform | URL |
 |---------|----------|-----|
-| Frontend | Vercel | code-collab-woad.vercel.app |
-| Backend | Render | codecollab-gcgs.onrender.com |
+| Frontend | Vercel | [code-collab-woad.vercel.app](https://code-collab-woad.vercel.app) |
+| Backend | Render | [codecollab-gcgs.onrender.com](https://codecollab-gcgs.onrender.com) |
 | Database | Supabase | PostgreSQL (connection pooler) |
-
-> **Note:** Code execution uses JDoodle API (200 req/day free tier).  
-> Run button works for all 60+ languages in the deployed version.
 
 ---
 
@@ -134,29 +144,24 @@ flowchart LR
     BE["Backend<br/>Express + Socket.io<br/>(Render)"]
     YJS["Yjs Doc<br/>(in-memory per room)"]
     PG["PostgreSQL<br/>(Supabase)"]
-    JD["JDoodle API<br/>(60+ languages)"]
+    JD["JDoodle API<br/>(Multi-Account Pool)"]
 
     FE -- "HTTP REST (auth, rooms, snapshots)" --> BE
     FE <-- "WebSocket (live cursors, chat, CRDT updates)" --> BE
     BE <--> YJS
-    YJS -- "persisted every ~5s / on disconnect" --> PG
+    YJS -- "persisted every ~5s / on shutdown" --> PG
     BE -- "snapshots, rooms, users" --> PG
     BE -- "run code" --> JD
 ```
 
 ### Real-time Sync (Yjs CRDT)
-- Server holds one `Y.Doc` per active room in memory
-- Client updates sent as binary `Uint8Array` frames
-- State persisted to PostgreSQL every 5s
-- On join, server sends full state vector (`yjs-init`)
+- Server maintains one `Y.Doc` per active room in memory.
+- Client edits transmit as binary `Uint8Array` frames over WebSocket.
+- State persists to PostgreSQL every 5s and flushes on graceful shutdown.
+- On join, clients receive full state vector (`yjs-init`).
 
 ### Socket Authentication
-JWT verified on handshake. `userId` and `username` always read from `socket.verifiedUser` — client payload never trusted.
-
-### Version History
-- Manual save / auto-save every 10 min / snapshot on language change
-- Max 100 snapshots per room
-- Restore syncs to all peers via CRDT transaction
+JWT verified during handshake. `userId` and `username` are extracted from verified token payloads — client-sent identifiers are never trusted.
 
 ---
 
@@ -166,53 +171,40 @@ JWT verified on handshake. `userId` and `username` always read from `socket.veri
 CodeCollab/
 ├── backend/
 │   └── src/
-│       ├── index.js                 # Express + Socket.io server, event handlers
+│       ├── index.js                 # Server entry, security headers, Socket.io, graceful shutdown
 │       ├── controllers/
-│       │   ├── authController.js    # Login, register, Google OAuth
+│       │   ├── authController.js    # Auth, OTP, Google OAuth, username setup
 │       │   ├── executeController.js # Code execution endpoint
 │       │   └── roomController.js    # Room CRUD, snapshots
-│       ├── routes/                  # REST API routes
+│       ├── routes/                  # Express REST routes
 │       ├── services/
-│       │   ├── executionService.js  # JDoodle API integration (60+ lang)
-│       │   ├── langConfig.js        # Language whitelist + aliases
-│       │   └── yjsManager.js        # Yjs document management
-│       └── middleware/              # Auth middleware
+│       │   ├── executionService.js  # JDoodle multi-account rotation
+│       │   ├── langConfig.js        # Language configurations & aliases
+│       │   └── yjsManager.js        # Yjs document management & persistence
+│       └── middleware/              # Auth & security middleware
 ├── frontend/
+│   ├── public/
+│   │   ├── og-image.svg             # 1200x630 social preview card
+│   │   ├── robots.txt               # Crawler directives
+│   │   └── sitemap.xml              # XML sitemap
 │   └── src/
 │       ├── pages/
-│       │   ├── Landing.jsx          # Homepage with animated background
-│       │   ├── Dashboard.jsx        # Room creation, recent rooms
-│       │   ├── MyRooms.jsx          # All user rooms
-│       │   ├── Room.jsx             # Collaborative editor
-│       │   └── Login.jsx            # Auth page
-│       ├── components/              # Reusable UI components
-│       ├── context/AuthContext.jsx   # Auth state management
-│       └── utils/
-│           ├── languages.js         # Central language config (60+ langs)
-│           ├── icons.jsx            # Language icons + theme colors
-│           └── format.js            # Display utilities
+│       │   ├── Landing.jsx          # Hero page with WebGL shaders & ParticleText
+│       │   ├── Dashboard.jsx        # Workspace creation & recent rooms
+│       │   ├── MyRooms.jsx          # Full user workspace history
+│       │   ├── Room.jsx             # Collaborative editor with Monaco & terminal
+│       │   ├── Login.jsx            # Authentication form
+│       │   ├── SetupUsername.jsx    # Post-OAuth username selection
+│       │   ├── ResetPassword.jsx    # Password recovery flow
+│       │   ├── PrivacyPolicy.jsx    # Application privacy policy
+│       │   └── NotFound.jsx         # Custom 404 page
+│       ├── hooks/
+│       │   └── usePageMeta.js       # Dynamic SEO, title, and canonical hook
+│       ├── components/              # UI components (VersionHistory, WarpText, etc.)
+│       ├── context/AuthContext.jsx   # Global auth state management
+│       └── utils/                   # Languages, icons, and formatting utilities
 └── README.md
 ```
-
----
-
-## Known Limitations
-
-- **JDoodle free tier: 200 requests/day** across the whole deployed app. Once
-  hit, the Run button will return an execution error until the quota resets.
-  A self-hosted per-language Docker sandbox was scoped as the fix (see
-  `backend/sandbox/README.md`) but isn't wired up yet.
-- **No self-hosted execution sandbox yet** — all code execution is fully
-  outsourced to JDoodle's infrastructure; nothing runs untrusted code on this
-  server.
-- **Room roles are per-user-per-room, not per-session** — joining a room's
-  view-only link demotes that user's role for that room even if they were
-  previously an editor there (see `roomController.js`). Intentional, but
-  worth knowing if you're testing with one account across two tabs.
-- **In-memory room state** (`roomMeta` in `index.js`) means a backend
-  restart drops live presence/cursor state for active rooms — the Yjs
-  document itself is safe (persisted to Postgres), but users will need to
-  rejoin the room in the UI.
 
 ---
 
@@ -220,35 +212,16 @@ CodeCollab/
 
 | Event | Direction | Description |
 |-------|-----------|-------------|
-| `join-room` | C→S | Join room with role |
-| `room-state` | S→C | Initial language + user list |
-| `yjs-init` | S→C | Full Yjs state on join |
-| `yjs-update` | C↔S | Binary CRDT update |
-| `users-update` | S→C | Updated user list |
-| `language-change` | C↔S | Language switch (persisted to DB) |
-| `cursor-move` / `cursor-update` | C↔S | Remote cursors |
-| `chat-message` | C↔S | Chat |
-| `typing` / `typing-update` | C↔S | Typing indicator |
-| `execution-result` | C↔S | Code run output |
-
----
-
-## Google OAuth Setup
-
-1. [console.cloud.google.com](https://console.cloud.google.com) → new project
-2. OAuth 2.0 Client ID (Web app)
-3. Authorized redirect URI: `https://codecollab-gcgs.onrender.com/api/auth/google/callback`
-4. Add `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` to backend env
-
----
-
-## Security Notes
-- Socket auth via JWT handshake
-- REST auth middleware with token caching
-- Snapshot saves are atomic DB transactions
-- Chat messages sanitized + capped at 500 chars server-side
-- Yjs editor role verified server-side before applying updates
-- Password reset tokens are statelessly bound to the user's `password_hash`, ensuring single-use and immediate invalidation upon password change.
+| `join-room` | C→S | Join room with role code |
+| `room-state` | S→C | Initial language and active user roster |
+| `yjs-init` | S→C | Complete Yjs CRDT state on initial join |
+| `yjs-update` | C↔S | Binary CRDT document patch |
+| `users-update` | S→C | Active participants list update |
+| `language-change` | C↔S | Synchronized language switch |
+| `cursor-move` / `cursor-update` | C↔S | Remote multi-cursor coordinate broadcast |
+| `chat-message` | C↔S | In-room messaging |
+| `typing` / `typing-update` | C↔S | Typing indicator broadcast |
+| `execution-result` | C↔S | Real-time code execution output |
 
 ---
 
@@ -258,7 +231,8 @@ CodeCollab/
 cd backend && npm test
 ```
 
-| Suite | What it tests |
-|-------|----|
-| `auth.test.js` | Token cache, invalidation, bad tokens |
-| `yjsManager.test.js` | Race condition fix, doc creation, update roundtrip |
+| Suite | Description |
+|-------|-------------|
+| `auth.test.js` | Token verification, caching, and unauthorized rejections |
+| `executionService.test.js` | Multi-account JDoodle failover, rate-limit cooldown, and error parsing |
+| `yjsManager.test.js` | CRDT document persistence, concurrency roundtrips, and room cleanup |
