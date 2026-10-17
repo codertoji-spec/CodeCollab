@@ -1,4 +1,7 @@
 require('dotenv').config();
+const { validateEnv } = require('./config/env');
+validateEnv();
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -108,6 +111,30 @@ const getOrCreateMeta = (roomId, language = 'javascript') => {
   return roomMeta[roomId];
 };
 
+// ── Rate limiter for high-frequency socket events (per socket) ────────────────
+const socketRateLimits = new Map();
+const checkSocketRateLimit = (socketId, eventType, maxPerSecond = 50) => {
+  const key = `${socketId}:${eventType}`;
+  const now = Date.now();
+  let record = socketRateLimits.get(key);
+  if (!record || now - record.windowStart > 1000) {
+    record = { windowStart: now, count: 1 };
+    socketRateLimits.set(key, record);
+    return true;
+  }
+  record.count++;
+  return record.count <= maxPerSecond;
+};
+
+// Clean up socket rate limit state on disconnect
+const clearSocketRateLimits = (socketId) => {
+  for (const key of socketRateLimits.keys()) {
+    if (key.startsWith(`${socketId}:`)) {
+      socketRateLimits.delete(key);
+    }
+  }
+};
+
 // ── Snapshot auto-save helper ─────────────────────────────────────────────────
 const AUTO_SNAPSHOT_INTERVAL = 10 * 60 * 1000; // 10 minutes
 const autoSnapshotTimers = new Map();
@@ -156,71 +183,127 @@ io.on('connection', (socket) => {
   const { id: userId, username } = socket.verifiedUser;
   console.log(`Socket connected: ${socket.id} (user: ${username})`);
 
-  socket.on('join-room', async ({ roomId, role: clientRole, language }) => {
-    socket.join(roomId);
-    
-    // Fetch the actual verified role from PostgreSQL
-    let actualRole = 'viewer';
+  socket.on('join-room', async (payload) => {
     try {
-      const partResult = await pool.query(`
-        SELECT role 
-        FROM room_participants
-        WHERE room_id = $1 AND user_id = $2
-      `, [roomId, userId]);
-      
-      if (partResult.rows.length > 0) {
-        actualRole = partResult.rows[0].role;
+      if (!payload || typeof payload !== 'object') {
+        return socket.emit('join-error', { message: 'Invalid payload format.' });
       }
+
+      const { roomId, language } = payload;
+      if (!roomId || typeof roomId !== 'string' || roomId.trim().length === 0) {
+        return socket.emit('join-error', { message: 'Valid room ID required.' });
+      }
+
+      // 1. Verify that the room actually exists
+      const roomCheck = await pool.query('SELECT id, language, name FROM rooms WHERE id = $1', [roomId]);
+      if (roomCheck.rows.length === 0) {
+        return socket.emit('join-error', { message: 'Room does not exist.' });
+      }
+
+      // 2. Verify that the user is an authorized participant
+      const partResult = await pool.query(
+        'SELECT role FROM room_participants WHERE room_id = $1 AND user_id = $2',
+        [roomId, userId]
+      );
+      if (partResult.rows.length === 0) {
+        return socket.emit('join-error', { message: 'Access denied: You are not a member of this room.' });
+      }
+
+      const actualRole = partResult.rows[0].role; // 'editor' | 'viewer'
+
+      // 3. Handle previous room cleanup if switching rooms on the same socket
+      if (socket.data?.roomId && socket.data.roomId !== roomId) {
+        const oldRoomId = socket.data.roomId;
+        socket.leave(oldRoomId);
+        const oldMeta = roomMeta[oldRoomId];
+        if (oldMeta) {
+          oldMeta.users.delete(socket.id);
+          if (oldMeta.users.size === 0) {
+            clearAutoSnapshot(oldRoomId);
+            yjsManager.persistDoc(oldRoomId).finally(() => { delete roomMeta[oldRoomId]; });
+          } else {
+            io.to(oldRoomId).emit('users-update', Array.from(oldMeta.users.values()));
+            io.to(oldRoomId).emit('user-left', { socketId: socket.id, username });
+            io.to(oldRoomId).emit('cursor-remove', { socketId: socket.id });
+          }
+        }
+      }
+
+      // 4. Join room ONLY after verification passes
+      socket.join(roomId);
+
+      const roomLang = roomCheck.rows[0].language || language || 'javascript';
+      const meta = getOrCreateMeta(roomId, roomLang);
+
+      meta.users.set(socket.id, { userId, username, role: actualRole, socketId: socket.id });
+      socket.data = { roomId, userId, username, role: actualRole };
+
+      // Start auto-snapshot timer for this room
+      scheduleAutoSnapshot(roomId);
+
+      // Initialize Yjs doc for room
+      await yjsManager.getOrCreateDoc(roomId);
+      const yjsState = yjsManager.encodeState(roomId);
+
+      socket.emit('room-state', {
+        language: meta.language,
+        role: actualRole,
+        users: Array.from(meta.users.values()),
+      });
+
+      if (yjsState) {
+        socket.emit('yjs-init', Buffer.from(yjsState));
+      }
+
+      socket.to(roomId).emit('user-joined', { socketId: socket.id, userId, username, role: actualRole });
+      io.to(roomId).emit('users-update', Array.from(meta.users.values()));
     } catch (e) {
-      console.error('Socket role verification error:', e.message);
+      console.error('[Socket join-room] error:', e.message);
+      socket.emit('join-error', { message: 'An internal error occurred while joining the room.' });
     }
-
-    const meta = getOrCreateMeta(roomId, language);
-
-    meta.users.set(socket.id, { userId, username, role: actualRole, socketId: socket.id });
-    socket.data = { roomId, userId, username, role: actualRole };
-
-    // Start auto-snapshot timer for this room (no-op if already running)
-    scheduleAutoSnapshot(roomId);
-
-    await yjsManager.getOrCreateDoc(roomId);
-    const yjsState = yjsManager.encodeState(roomId);
-
-    socket.emit('room-state', {
-      language: meta.language,
-      users: Array.from(meta.users.values()),
-    });
-
-    if (yjsState) {
-      socket.emit('yjs-init', Buffer.from(yjsState));
-    }
-
-    socket.to(roomId).emit('user-joined', { socketId: socket.id, userId, username, role: actualRole });
-    io.to(roomId).emit('users-update', Array.from(meta.users.values()));
   });
 
-  socket.on('yjs-update', ({ roomId, update }) => {
+  socket.on('yjs-update', ({ roomId, update } = {}) => {
+    // 1. Verify socket is joined to this room
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    if (!checkSocketRateLimit(socket.id, 'yjs-update', 100)) return;
+
     const meta = roomMeta[roomId];
     if (!meta) return;
     const user = meta.users.get(socket.id);
-    // Double-check: user must be editor AND must be the verified socket owner
-    if (!user || user.role === 'viewer' || user.userId !== userId) return;
+
+    // 2. Strict authorization: user must be editor AND the verified socket user
+    if (!user || user.role !== 'editor' || user.userId !== userId) return;
     if (!update) return;
 
-    const updateBytes = Buffer.isBuffer(update) ? update : Buffer.from(update);
-    yjsManager.applyUpdate(roomId, updateBytes);
-    socket.to(roomId).emit('yjs-update', { update: updateBytes });
+    try {
+      const updateBytes = Buffer.isBuffer(update) ? update : Buffer.from(update);
+      // Prevent oversized single update payload abuse (> 500KB)
+      if (updateBytes.length > 500 * 1024) return;
+
+      yjsManager.applyUpdate(roomId, updateBytes);
+      socket.to(roomId).emit('yjs-update', { update: updateBytes });
+    } catch (err) {
+      console.error(`[Socket yjs-update] Error for room ${roomId}:`, err.message);
+    }
   });
 
-  socket.on('language-change', ({ roomId, language }) => {
+  socket.on('language-change', ({ roomId, language } = {}) => {
+    // 1. Verify socket is in room
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    if (!language || typeof language !== 'string') return;
+
     const meta = roomMeta[roomId];
     if (!meta) return;
     const user = meta.users.get(socket.id);
-    if (!user || user.role === 'viewer') return;
+
+    // 2. Editors only
+    if (!user || user.role !== 'editor' || user.userId !== userId) return;
+
     meta.language = language;
     socket.to(roomId).emit('language-update', { language });
 
-    // Auto-snapshot on language change — captures state before reset
+    // Auto-snapshot on language change
     const code = yjsManager.getText(roomId);
     if (code.trim()) {
       pool.query(
@@ -229,34 +312,64 @@ io.on('connection', (socket) => {
       ).catch(err => console.error('[Snapshot] language-change error:', err.message));
     }
 
-    // Persist the new language to the database so it shows up in Dashboard
     pool.query('UPDATE rooms SET language = $1 WHERE id = $2', [language, roomId])
       .catch(err => console.error('[DB] Error updating room language:', err.message));
   });
 
-  socket.on('cursor-move', ({ roomId, position, selection }) => {
-    // username from verified socket, not client payload
+  socket.on('cursor-move', ({ roomId, position, selection } = {}) => {
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    if (!checkSocketRateLimit(socket.id, 'cursor-move', 60)) return;
+
+    // username from verified socket, never client payload
     socket.to(roomId).emit('cursor-update', { socketId: socket.id, username, position, selection });
   });
 
-  socket.on('chat-message', ({ roomId, message }) => {
+  socket.on('chat-message', ({ roomId, message } = {}) => {
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    if (!checkSocketRateLimit(socket.id, 'chat-message', 10)) return;
     if (!message || typeof message !== 'string') return;
+
     const sanitized = message.trim().slice(0, 500);
     if (!sanitized) return;
+
     io.to(roomId).emit('chat-message', {
-      socketId: socket.id, username, message: sanitized, timestamp: new Date().toISOString(),
+      socketId: socket.id,
+      username,
+      message: sanitized,
+      timestamp: new Date().toISOString(),
     });
   });
 
-  socket.on('typing', ({ roomId, isTyping }) => {
-    socket.to(roomId).emit('typing-update', { socketId: socket.id, username, isTyping });
+  socket.on('typing', ({ roomId, isTyping } = {}) => {
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    if (!checkSocketRateLimit(socket.id, 'typing', 20)) return;
+
+    socket.to(roomId).emit('typing-update', { socketId: socket.id, username, isTyping: Boolean(isTyping) });
   });
 
-  socket.on('execution-result', ({ roomId, result }) => {
-    io.to(roomId).emit('execution-result', result);
+  socket.on('execution-result', ({ roomId, result } = {}) => {
+    // Prevent client-spoofed execution results: only editors joined to this room can broadcast
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    const meta = roomMeta[roomId];
+    if (!meta) return;
+    const user = meta.users.get(socket.id);
+    if (!user || user.role !== 'editor') return;
+
+    // Validate result shape
+    if (!result || typeof result !== 'object') return;
+    const safeResult = {
+      output: typeof result.output === 'string' ? result.output.slice(0, 100_000) : '',
+      error: typeof result.error === 'string' ? result.error.slice(0, 10_000) : '',
+      compilerMessage: typeof result.compilerMessage === 'string' ? result.compilerMessage.slice(0, 50_000) : '',
+      exitCode: typeof result.exitCode === 'number' ? result.exitCode : 0,
+      signal: result.signal || null,
+    };
+
+    io.to(roomId).emit('execution-result', safeResult);
   });
 
   socket.on('disconnect', () => {
+    clearSocketRateLimits(socket.id);
     const { roomId } = socket.data || {};
     if (!roomId) return;
     const meta = roomMeta[roomId];

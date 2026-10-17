@@ -112,6 +112,9 @@ class YjsManager {
       console.log(`[Yjs] Persisted ${state.length} bytes for room ${roomId}`);
     } catch (err) {
       console.error(`[Yjs] Persist error for ${roomId}:`, err.message);
+      // Re-schedule save on transient database error so edits are not permanently lost
+      this.scheduleSave(roomId);
+      throw err;
     }
   }
 

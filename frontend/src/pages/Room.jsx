@@ -62,7 +62,7 @@ export default function Room() {
 
   const initialState = location.state || {}
   const [room] = useState(initialState.room || { id: roomId, name: 'Room', language: 'javascript' })
-  const [role] = useState(initialState.role || 'viewer')
+  const [role, setRole] = useState(initialState.role || 'viewer')
   const isEditor = role === 'editor'
 
   usePageMeta({
@@ -244,9 +244,14 @@ export default function Room() {
       if (bytes.length > 0) Y.applyUpdate(ydoc, bytes, 'remote')
     })
 
-    socket.on('room-state', ({ language: serverLang, users: serverUsers }) => {
+    socket.on('room-state', ({ language: serverLang, users: serverUsers, role: serverRole }) => {
       if (serverLang) setLanguage(serverLang)
+      if (serverRole) setRole(serverRole)
       setUsers(serverUsers || [])
+    })
+
+    socket.on('join-error', ({ message }) => {
+      setSocketError(message || 'Access denied to room.')
     })
 
     socket.on('language-update', ({ language: newLang }) => setLanguage(newLang))
@@ -383,7 +388,7 @@ export default function Room() {
     setRunning(true)
     setOutput(null)
     try {
-      const res = await axios.post(`${API}/execute/run`, { code, language, stdin }, { headers: authHeader() })
+      const res = await axios.post(`${API}/execute/run`, { code, language, stdin, roomId }, { headers: authHeader() })
       const result = res.data
       setOutput(result)
       socketRef.current?.emit('execution-result', { roomId, result })

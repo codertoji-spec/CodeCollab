@@ -13,11 +13,12 @@
  * 'execution-result' relay don't need to change if the execution backend
  * changes again in the future.
  */
+const pool = require('../config/db');
 const executionService = require('../services/executionService');
 const { LANGS, normalizeLang } = require('../services/langConfig');
 
 const executeCode = async (req, res) => {
-  const { code, stdin } = req.body;
+  const { code, stdin, roomId } = req.body;
   const rawLang = req.body.language;
   const language = normalizeLang(rawLang);
 
@@ -34,6 +35,25 @@ const executeCode = async (req, res) => {
       error: `Unsupported language: ${language}`,
       supported: Object.keys(LANGS),
     });
+  }
+
+  // If roomId is supplied, verify that the user is an authorized editor of the room
+  if (roomId) {
+    try {
+      const partResult = await pool.query(
+        'SELECT role FROM room_participants WHERE room_id = $1 AND user_id = $2',
+        [roomId, req.user.id]
+      );
+      if (!partResult.rows[0]) {
+        return res.status(403).json({ error: 'Not a member of this room' });
+      }
+      if (partResult.rows[0].role !== 'editor') {
+        return res.status(403).json({ error: 'Only editors can execute code in this room' });
+      }
+    } catch (e) {
+      console.error('[Execute] Room permission check error:', e.message);
+      return res.status(500).json({ error: 'Failed to verify room permissions' });
+    }
   }
 
   try {
