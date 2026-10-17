@@ -72,7 +72,7 @@ export default function VersionHistory({ roomId, isEditor, getCode, onRestore, o
           <h3 className="font-medium text-sm text-slate-200">🕐 Version History</h3>
           <p className="text-xs text-slate-500">{snapshots.length} snapshot{snapshots.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={onClose} className="text-slate-500 hover:text-slate-200 text-xl leading-none">×</button>
+        <button onClick={onClose} aria-label="Close version history" className="text-slate-500 hover:text-slate-200 text-xl leading-none">×</button>
       </div>
 
       {/* Save bar (editors only) */}
@@ -83,6 +83,7 @@ export default function VersionHistory({ roomId, isEditor, getCode, onRestore, o
             onChange={e => setLabel(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && saveNow()}
             placeholder="Label (optional)…"
+            aria-label="Snapshot label (optional)"
             className="flex-1 bg-dark-700 border border-dark-500 rounded px-2 py-1.5
                        text-xs text-slate-200 placeholder-slate-600
                        focus:outline-none focus:border-accent-primary"

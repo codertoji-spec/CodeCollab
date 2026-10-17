@@ -414,6 +414,7 @@ export default function Room() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard')}
+            aria-label="Back to dashboard"
             className="text-slate-500 hover:text-slate-200 text-sm transition-colors"
           >
             ← Back
@@ -601,7 +602,7 @@ export default function Room() {
                   <span className={`text-xs ${output.exitCode === 0 ? 'text-accent-green' : 'text-accent-red'}`}>
                     Exit: {output.exitCode}
                   </span>
-                  <button onClick={() => setOutput(null)} className="text-slate-500 hover:text-slate-200 text-sm">×</button>
+                  <button onClick={() => setOutput(null)} aria-label="Close output panel" className="text-slate-500 hover:text-slate-200 text-sm">×</button>
                 </div>
               </div>
               <pre className="px-4 py-3 font-mono text-xs text-slate-200 whitespace-pre-wrap">
@@ -666,12 +667,14 @@ export default function Room() {
                 value={chatInput}
                 onChange={handleChatTyping}
                 placeholder="Type a message…"
+                aria-label="Type a message"
                 className="flex-1 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-accent-primary"
                 maxLength={500}
               />
               <button
                 type="submit"
                 disabled={!chatInput.trim()}
+                aria-label="Send message"
                 className="bg-accent-primary hover:bg-yellow-300 disabled:opacity-40 text-white px-3 py-2 rounded-lg transition-all text-xs"
               >
                 →
