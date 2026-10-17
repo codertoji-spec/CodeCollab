@@ -7,7 +7,6 @@ import SpecularButton from '../components/SpecularButton'
 import { useAuth } from '../context/AuthContext'
 import { formatUsername } from '../utils/format'
 import usePageMeta from '../hooks/usePageMeta'
-import { FiCode, FiZap, FiUsers, FiShield, FiTerminal } from 'react-icons/fi'
 
 const hslToHex = (h, s, l) => {
   l /= 100;
@@ -66,25 +65,15 @@ export default function Landing() {
           waveScale={0.6}
           waveRatio={0.9}
           swell={35}
-          headCount={4}
-          headWidth={3}
-          headLength={4}
-          crestFactor={1.2}
-          tint="#000000"
-          tintFactor={0.5}
-          roughness={0.05}
-          metallic={0.1}
-          lightIntensity={1.0}
-          lightColor="#FFFFFF"
-          lightPosition={[0, 5, 10]}
-          ambientIntensity={0.3}
-          ambientColor="#FFFFFF"
-          reflectionIntensity={0.2}
-          refractionIndex={1.333}
-          fadeSpeed={0.05}
-          foamColor="#FFFFFF"
-          foamIntensity={0.1}
-          parallax={true}
+          turbulence={20}
+          tilt={1.11}
+          zoom={1.0}
+          height={5.5}
+          fogDepth={15}
+          detail="medium"
+          brightness={1.0}
+          opacity={1.0}
+          mouseInteraction={true}
           parallaxStrength={0.5}
           grain={true}
           grainIntensity={0.05}
@@ -94,31 +83,15 @@ export default function Landing() {
       {/* Content Layer */}
       <div className="relative z-10 flex flex-col min-h-screen pointer-events-none">
         {/* Navbar */}
-        <nav className="flex items-center justify-between px-6 md:px-12 py-5 pointer-events-auto">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400 group-hover:scale-105 transition-transform">
-              <FiCode className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-lg text-white tracking-tight">
-              Code<span className="text-yellow-400">Collab</span>
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-4">
+        <nav className="flex items-center justify-end px-8 py-5 pointer-events-auto">
+          <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link
-                  to="/dashboard"
-                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-semibold transition-colors flex items-center gap-2"
-                >
-                  <FiTerminal className="w-4 h-4 text-yellow-400" />
-                  Dashboard
-                </Link>
                 <div className="flex items-center relative profile-dropdown-container">
                   <button 
                     type="button"
                     aria-label="User profile menu"
-                    className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/40"
+                    className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors focus:outline-none"
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                   >
                     {user?.avatar_url ? (
@@ -171,8 +144,8 @@ export default function Landing() {
         </nav>
 
         {/* Hero */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-16 fade-in-up">
-          <div className="mb-6 drop-shadow-2xl pointer-events-auto" style={{ width: '100%', maxWidth: '800px', height: '160px' }}>
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20 fade-in-up">
+          <div className="mb-8 drop-shadow-2xl pointer-events-auto" style={{ width: '100%', maxWidth: '800px', height: '160px' }}>
             <ParticleText
               text="CODECOLLAB"
               particleSize={4}
@@ -195,11 +168,7 @@ export default function Landing() {
 
           <h1 className="sr-only">CodeCollab — Real-time Collaborative Code Editor</h1>
 
-          <p className="text-base md:text-xl text-slate-300 max-w-xl mx-auto mb-8 pointer-events-auto leading-relaxed">
-            Code simultaneously with your team, see live cursors, discuss ideas in real-time, and run code instantly in 60+ languages.
-          </p>
-
-          <div className="flex items-center gap-4 flex-wrap justify-center relative z-20 pointer-events-auto mb-12">
+          <div className="flex items-center gap-4 flex-wrap justify-center relative z-20 pointer-events-auto">
             <SpecularButton
               size="lg"
               radius={18}
@@ -222,56 +191,7 @@ export default function Landing() {
               {user ? 'Open Dashboard →' : 'Start Coding Free →'}
             </SpecularButton>
           </div>
-
-          {/* Value Props Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl w-full pointer-events-auto text-left">
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md">
-              <div className="flex items-center gap-2 text-yellow-400 font-semibold text-sm mb-1">
-                <FiZap className="w-4 h-4" /> Real-Time CRDT
-              </div>
-              <p className="text-xs text-slate-400">Conflict-free simultaneous editing powered by Yjs and binary WebSockets.</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md">
-              <div className="flex items-center gap-2 text-purple-400 font-semibold text-sm mb-1">
-                <FiTerminal className="w-4 h-4" /> 60+ Compilers
-              </div>
-              <p className="text-xs text-slate-400">Run C++, Python, Rust, JavaScript, Go, and 55+ other languages instantly.</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md">
-              <div className="flex items-center gap-2 text-sky-400 font-semibold text-sm mb-1">
-                <FiUsers className="w-4 h-4" /> Role Security
-              </div>
-              <p className="text-xs text-slate-400">Granular Editor & Viewer access codes, snapshot versioning, and secure rooms.</p>
-            </div>
-          </div>
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-white/10 py-6 px-6 pointer-events-auto">
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <div>
-              © 2026 CodeCollab. All rights reserved.
-            </div>
-            <div className="flex items-center gap-6">
-              <Link to="/privacy" className="hover:text-slate-300 transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/login" className="hover:text-slate-300 transition-colors">
-                Sign In
-              </Link>
-              <a
-                href="https://github.com/codertoji-spec/CodeCollab"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-slate-300 transition-colors"
-              >
-                GitHub
-              </a>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   )
