@@ -7,8 +7,9 @@ import MyRooms from './pages/MyRooms'
 import Room from './pages/Room'
 import GoogleSuccess from './pages/GoogleSuccess'
 import Landing from './pages/Landing'
-
 import SetupUsername from './pages/SetupUsername'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import NotFound from './pages/NotFound'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -38,11 +39,12 @@ function App() {
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/setup-username" element={<SetupUsername />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/auth/google/success" element={<GoogleSuccess />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/my-rooms" element={<PrivateRoute><MyRooms /></PrivateRoute>} />
           <Route path="/room/:roomId" element={<PrivateRoute><Room /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

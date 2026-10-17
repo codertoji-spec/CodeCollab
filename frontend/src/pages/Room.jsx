@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import VersionHistory from '../components/VersionHistory'
 import { getLangIcon } from '../utils/icons'
 import { LANGUAGES, LANGUAGE_CONFIG, DEFAULT_CODE, getMonacoLang, getLangDisplay, getLanguagesByCategory, CATEGORIES } from '../utils/languages'
+import usePageMeta from '../hooks/usePageMeta'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
@@ -63,6 +64,12 @@ export default function Room() {
   const [room] = useState(initialState.room || { id: roomId, name: 'Room', language: 'javascript' })
   const [role] = useState(initialState.role || 'viewer')
   const isEditor = role === 'editor'
+
+  usePageMeta({
+    title: `${room.name || 'Code Room'} — ${isEditor ? 'Editor' : 'Viewer'}`,
+    description: 'Collaborative code room with real-time multi-cursor editing and live compilation.',
+    noindex: true
+  });
 
   // ── UI state ──────────────────────────────────────────────────────────────
   const [language, setLanguage] = useState(room.language || 'javascript')

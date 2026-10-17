@@ -9,6 +9,8 @@ import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiT
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
 import { getLangDisplay } from '../utils/languages'
+import usePageMeta from '../hooks/usePageMeta'
+import { Link } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -19,6 +21,13 @@ const authHeader = () => ({
 export default function MyRooms() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  usePageMeta({
+    title: 'My Workspaces',
+    description: 'View and manage all your past and active collaborative coding workspaces.',
+    path: '/my-rooms',
+    noindex: true
+  });
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [shareModal, setShareModal] = useState(null)
@@ -104,18 +113,20 @@ export default function MyRooms() {
           </div>
 
           <div className="flex items-center relative profile-dropdown-container">
-            <div 
-              className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors"
+            <button 
+              type="button"
+              aria-label="User profile menu"
+              className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
             >
               {user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover pointer-events-none" />
+                <img src={user.avatar_url} alt={`${user.username || 'User'} avatar`} className="w-8 h-8 rounded-full object-cover pointer-events-none" />
               ) : (
                 <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner pointer-events-none">
                   {formatUsername(user?.username)?.[0]?.toUpperCase()}
                 </div>
               )}
-            </div>
+            </button>
             
             {profileDropdownOpen && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
@@ -225,14 +236,18 @@ export default function MyRooms() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">No active workspaces</h3>
               <p className="text-slate-400 text-sm max-w-xs text-center">Go to your Dashboard and create your first room to start collaborating in real-time.</p>
-              <button onClick={() => navigate('/')} className="mt-6 px-6 py-3 bg-[#6D28D9] hover:bg-[#5B21B6] text-white font-bold rounded-xl flex items-center gap-2">
+              <button onClick={() => navigate('/dashboard')} className="mt-6 px-6 py-3 bg-[#6D28D9] hover:bg-[#5B21B6] text-white font-bold rounded-xl flex items-center gap-2">
                 Back to Dashboard
               </button>
             </div>
           )}
           
-          <footer className="w-full text-center py-8 text-slate-500 text-sm mt-auto">
-            © 2026 CodeCollab. All rights reserved.
+          <footer className="w-full text-center py-8 text-slate-500 text-sm mt-auto flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5">
+            <div>© 2026 CodeCollab. All rights reserved.</div>
+            <div className="flex items-center gap-6">
+              <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+              <Link to="/" className="hover:text-slate-300 transition-colors">Home</Link>
+            </div>
           </footer>
         </div>
       </div>
@@ -251,8 +266,10 @@ export default function MyRooms() {
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-bold text-white">Share Workspace</h3>
               <button 
+                type="button"
+                aria-label="Close share workspace dialog"
                 onClick={() => setShareModal(null)} 
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
               >
                 ✕
               </button>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#18132A" />
+      <stop offset="60%" stop-color="#0B0912" />
+      <stop offset="100%" stop-color="#050408" />
+    </radialGradient>
+    <linearGradient id="primaryGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A78BFA" />
+      <stop offset="100%" stop-color="#7C3AED" />
+    </linearGradient>
+    <linearGradient id="accentGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FACC15" />
+      <stop offset="100%" stop-color="#FB923C" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="30" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)" />
+
+  <!-- Background Ambient Glows -->
+  <circle cx="200" cy="150" r="180" fill="#7C3AED" opacity="0.25" filter="url(#glow)" />
+  <circle cx="1000" cy="480" r="220" fill="#FACC15" opacity="0.18" filter="url(#glow)" />
+
+  <!-- Code Graphic Container -->
+  <g transform="translate(100, 140)">
+    <!-- Terminal Icon Badge -->
+    <rect x="0" y="0" width="80" height="80" rx="20" fill="url(#primaryGlow)" />
+    <path d="M24 28 L40 40 L24 52" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    <line x1="44" y1="52" x2="56" y2="52" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Brand Name -->
+    <text x="105" y="55" font-family="'Space Grotesk', system-ui, -apple-system, sans-serif" font-size="56" font-weight="800" fill="#FFFFFF" letter-spacing="0.05em">
+      Code<tspan fill="url(#accentGlow)">Collab</tspan>
+    </text>
+
+    <!-- Tagline -->
+    <text x="5" y="150" font-family="'Space Grotesk', system-ui, -apple-system, sans-serif" font-size="44" font-weight="700" fill="#EDEDED">
+      Real-Time Collaborative Code Editor
+    </text>
+
+    <!-- Subtitle -->
+    <text x="5" y="210" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#94A3B8" font-weight="400">
+      Multi-cursor editing, live chat, instant execution across 60+ languages.
+    </text>
+
+    <!-- Feature badges -->
+    <g transform="translate(5, 260)">
+      <rect x="0" y="0" width="160" height="42" rx="21" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" />
+      <text x="80" y="26" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#FACC15" text-anchor="middle">⚡ Yjs CRDT Sync</text>
+
+      <rect x="180" y="0" width="170" height="42" rx="21" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" />
+      <text x="265" y="26" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#A78BFA" text-anchor="middle">💻 60+ Languages</text>
+
+      <rect x="370" y="0" width="160" height="42" rx="21" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" />
+      <text x="450" y="26" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#38BDF8" text-anchor="middle">👥 Live Presence</text>
+
+      <rect x="550" y="0" width="160" height="42" rx="21" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" />
+      <text x="630" y="26" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#34D399" text-anchor="middle">🔒 Secure Rooms</text>
+    </g>
+  </g>
+</svg>

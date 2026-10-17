@@ -11,6 +11,7 @@ import { FiFileText, FiHome, FiUsers, FiGlobe, FiPlus, FiLogIn, FiArrowRight, Fi
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
 import { LANGUAGES, getLangDisplay, getLanguagesByCategory, CATEGORIES } from '../utils/languages'
+import usePageMeta from '../hooks/usePageMeta'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -21,6 +22,13 @@ const authHeader = () => ({
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  usePageMeta({
+    title: 'Workspace Dashboard',
+    description: 'Manage your collaborative code workspaces, join rooms with code, or create new coding sessions.',
+    path: '/dashboard',
+    noindex: true
+  });
   const [rooms, setRooms] = useState([])
   const [tab, setTab] = useState('create') // 'create' | 'join'
   const [createForm, setCreateForm] = useState({ name: '', language: 'javascript' })
@@ -150,18 +158,20 @@ export default function Dashboard() {
             />
           </div>
           <div className="flex items-center relative profile-dropdown-container">
-            <div 
-              className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors"
+            <button 
+              type="button"
+              aria-label="User profile menu"
+              className="flex items-center justify-center bg-white/5 w-10 h-10 rounded-full border border-white/10 shadow-lg relative z-20 cursor-pointer hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
             >
               {user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover pointer-events-none" />
+                <img src={user.avatar_url} alt={`${user.username || 'User'} avatar`} className="w-8 h-8 rounded-full object-cover pointer-events-none" />
               ) : (
                 <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner pointer-events-none">
                   {formatUsername(user?.username)?.[0]?.toUpperCase()}
                 </div>
               )}
-            </div>
+            </button>
             
             {profileDropdownOpen && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
@@ -432,8 +442,12 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <footer className="w-full text-center py-8 text-slate-500 text-sm mt-auto">
-            © 2026 CodeCollab. All rights reserved.
+          <footer className="w-full text-center py-8 text-slate-500 text-sm mt-auto flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5">
+            <div>© 2026 CodeCollab. All rights reserved.</div>
+            <div className="flex items-center gap-6">
+              <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+              <Link to="/" className="hover:text-slate-300 transition-colors">Home</Link>
+            </div>
           </footer>
         </div>
       </div>
@@ -452,8 +466,10 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-bold text-white">Share Workspace</h3>
               <button 
+                type="button"
+                aria-label="Close share workspace dialog"
                 onClick={() => setShareModal(null)} 
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
               >
                 ✕
               </button>

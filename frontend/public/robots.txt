@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /reset-password
+Allow: /privacy
+Disallow: /dashboard
+Disallow: /my-rooms
+Disallow: /room/
+Disallow: /setup-username
+Disallow: /auth/
+
+Sitemap: https://code-collab-woad.vercel.app/sitemap.xml

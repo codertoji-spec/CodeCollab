@@ -120,3 +120,29 @@ select option:hover {
   color: #0A0A0A;
   font-weight: 600;
 }
+
+/* Global keyboard focus-visible ring — prevents outline removal while preserving mouse UX */
+:focus-visible {
+  outline: 2px solid rgba(250, 204, 21, 0.7);
+  outline-offset: 2px;
+}
+
+/* Reduced-motion preference — disable all animations/transitions for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .fade-in-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .gradient-bg {
+    animation: none;
+  }
+}

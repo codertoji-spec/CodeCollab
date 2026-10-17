@@ -1,34 +1,43 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import DotGrid from '../components/DotGrid'
 import WarpText from '../components/WarpText'
+import usePageMeta from '../hooks/usePageMeta'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export default function SetupUsername() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const { user, setTokenUser } = useAuth()
+  const { setTokenUser } = useAuth()
   const [username, setUsername] = useState('')
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' })
-  
-  useEffect(() => {
-    // If we have a user and they already set a name, we can pre-fill or just let them choose
-    if (user?.username) {
-      // The auto-generated one has an underscore and random string, but we can just leave it blank to force a choice
-    }
-  }, [user])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  usePageMeta({
+    title: 'Choose Username',
+    description: 'Choose your unique username to complete your CodeCollab profile.',
+    path: '/setup-username',
+    noindex: true
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setStatusMessage({ type: '', text: '' });
     
     if (!username.trim()) {
-      setStatusMessage({ type: 'error', text: 'Username cannot be empty' });
+      setStatusMessage({ type: 'error', text: 'Username cannot be empty.' });
       return;
     }
 
+    if (username.trim().length < 3) {
+      setStatusMessage({ type: 'error', text: 'Username must be at least 3 characters long.' });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const token = params.get('token') || localStorage.getItem('cc_token');
       const res = await fetch(`${API}/auth/set-username`, {
@@ -43,14 +52,16 @@ export default function SetupUsername() {
       
       if (res.ok) {
         if (token) {
-          setTokenUser(token); // refresh context
+          setTokenUser(token);
         }
         navigate('/dashboard');
       } else {
         setStatusMessage({ type: 'error', text: data.error || 'Failed to set username' });
       }
-    } catch (err) {
-      setStatusMessage({ type: 'error', text: 'Network error' });
+    } catch {
+      setStatusMessage({ type: 'error', text: 'Network connectivity error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -70,8 +81,7 @@ export default function SetupUsername() {
         />
       </div>
 
-      <div className="relative z-10 flex flex-1 items-center justify-center px-4 w-full h-full pointer-events-none">
-        
+      <div className="relative z-10 flex flex-1 items-center justify-center px-4 w-full h-full pointer-events-none py-12">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#5227FF]/20 rounded-full blur-[120px] pointer-events-none"></div>
         
         <div className="w-full max-w-md pointer-events-auto relative">
@@ -96,7 +106,6 @@ export default function SetupUsername() {
           </div>
 
           <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] fade-in-up relative overflow-hidden" style={{ animationDelay: '0.1s' }}>
-            
             <div className="absolute inset-0 border border-white/5 rounded-3xl pointer-events-none"></div>
 
             <p className="text-sm text-slate-400 mb-6 text-center">
@@ -104,17 +113,24 @@ export default function SetupUsername() {
             </p>
 
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-              
               {statusMessage.text && (
-                <div className={`p-3 rounded-xl text-sm font-medium animate-in fade-in ${statusMessage.type === 'error' ? 'bg-red-500/10 text-red-300 border border-red-500/20' : 'bg-green-500/10 text-green-300 border border-green-500/20'}`}>
+                <div 
+                  role={statusMessage.type === 'error' ? 'alert' : 'status'}
+                  aria-live="polite"
+                  className={`p-3 rounded-xl text-sm font-medium animate-in fade-in ${statusMessage.type === 'error' ? 'bg-red-500/10 text-red-300 border border-red-500/20' : 'bg-green-500/10 text-green-300 border border-green-500/20'}`}
+                >
                   {statusMessage.text}
                 </div>
               )}
 
               <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider ml-1">Username</label>
+                <label htmlFor="setup-username-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider ml-1">Username</label>
                 <input 
+                  id="setup-username-input"
+                  name="username"
                   type="text" 
+                  required
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="cool_dev_99"
@@ -124,9 +140,10 @@ export default function SetupUsername() {
 
               <button 
                 type="submit"
-                className="w-full mt-2 bg-gradient-to-r from-[#5227FF] to-[#8a2be2] hover:from-[#6b44ff] hover:to-[#9b4dff] text-white font-semibold py-3.5 rounded-xl shadow-[0_0_20px_rgba(82,39,255,0.4)] hover:shadow-[0_0_25px_rgba(82,39,255,0.6)] transition-all duration-300 transform hover:-translate-y-0.5"
+                disabled={isSubmitting}
+                className="w-full mt-2 bg-gradient-to-r from-[#5227FF] to-[#8a2be2] hover:from-[#6b44ff] hover:to-[#9b4dff] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl shadow-[0_0_20px_rgba(82,39,255,0.4)] hover:shadow-[0_0_25px_rgba(82,39,255,0.6)] transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#5227FF]"
               >
-                Complete Setup
+                {isSubmitting ? 'Saving…' : 'Complete Setup'}
               </button>
             </form>
           </div>
