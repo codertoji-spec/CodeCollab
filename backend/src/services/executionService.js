@@ -26,7 +26,7 @@ if (ACCOUNTS.length === 0) {
   );
 }
 
-const COOLDOWN_PERIOD_MS = 60 * 60 * 1000; // 1 hour
+const COOLDOWN_PERIOD_MS = 5 * 60 * 1000; // 5 minutes (was 1 hour)
 
 const LANG_MAP = {
   // ── Popular ────────────────────────────────────────────────────────────────
@@ -190,17 +190,12 @@ async function run({ language, code, stdin = '' }) {
   let lastError = null;
 
   for (let attempt = 0; attempt < ACCOUNTS.length; attempt++) {
-    const account = getAvailableAccount();
+    let account = getAvailableAccount();
     
     if (!account) {
-      console.log(`[JDoodle] Both/all accounts unavailable.`);
-      return { 
-        output: '', 
-        error: 'All JDoodle execution accounts are currently unavailable due to quota or rate-limits. Please try again later.', 
-        compilerMessage: '', 
-        exitCode: null, 
-        signal: null 
-      };
+      // If all accounts are currently in cooldown, fallback to the one whose cooldown expires soonest
+      // rather than hard-failing without even trying JDoodle!
+      account = ACCOUNTS.slice().sort((a, b) => a.exhaustedUntil - b.exhaustedUntil)[0];
     }
 
     try {
