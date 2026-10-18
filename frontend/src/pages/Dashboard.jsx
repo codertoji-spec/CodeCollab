@@ -78,7 +78,7 @@ export default function Dashboard() {
   }
 
   const enterRoom = (room) => {
-    navigate(`/room/${room.id}`, { state: { room, role: 'editor' } })
+    navigate(`/room/${room.id}`, { state: { room } })
   }
 
   const copyToClipboard = (text) => {

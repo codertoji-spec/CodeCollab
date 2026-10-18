@@ -51,7 +51,7 @@ export default function MyRooms() {
   }
 
   const enterRoom = (room) => {
-    navigate(`/room/${room.id}`, { state: { roomId: room.id, username: user.username, language: room.language } })
+    navigate(`/room/${room.id}`, { state: { room } })
   }
 
   const copyToClipboard = (text) => {
