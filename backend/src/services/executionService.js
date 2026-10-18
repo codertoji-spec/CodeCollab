@@ -12,6 +12,10 @@ const ACCOUNTS = [
   { id: process.env.JDOODLE_CLIENT_ID_2, secret: process.env.JDOODLE_CLIENT_SECRET_2, name: 'Account 2', exhaustedUntil: 0 },
   { id: process.env.JDOODLE_CLIENT_ID_3, secret: process.env.JDOODLE_CLIENT_SECRET_3, name: 'Account 3', exhaustedUntil: 0 },
   { id: process.env.JDOODLE_CLIENT_ID_4, secret: process.env.JDOODLE_CLIENT_SECRET_4, name: 'Account 4', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_5, secret: process.env.JDOODLE_CLIENT_SECRET_5, name: 'Account 5', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_6, secret: process.env.JDOODLE_CLIENT_SECRET_6, name: 'Account 6', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_7, secret: process.env.JDOODLE_CLIENT_SECRET_7, name: 'Account 7', exhaustedUntil: 0 },
+  { id: process.env.JDOODLE_CLIENT_ID_8, secret: process.env.JDOODLE_CLIENT_SECRET_8, name: 'Account 8', exhaustedUntil: 0 },
 ].filter(a => a.id && a.secret);
 
 // Fallback to legacy env vars if new ones are not set
