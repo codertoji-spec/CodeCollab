@@ -207,8 +207,20 @@ async function run({ language, code, stdin = '' }) {
       return await executeWithAccount(account, lang, code, stdin);
     } catch (err) {
       lastError = err;
-      // Mark this account as exhausted and try the next one
-      markAccountExhausted(account);
+      const errMsg = err?.message?.toLowerCase() || '';
+      const isTimeout = errMsg.includes('timeout');
+      const isQuotaLimit = errMsg.includes('daily limit') || errMsg.includes('quota') || errMsg.includes('429');
+      
+      if (isQuotaLimit) {
+        // Quota exhausted -> lock account for cooldown and try next account
+        markAccountExhausted(account);
+      } else if (isTimeout) {
+        // Script timeout (e.g. waiting for STDIN / cin) -> do NOT lock account, abort immediately to show hint
+        break;
+      } else {
+        // Infrastructure / network failure -> try next account without locking this one out for an hour
+        console.warn(`[JDoodle] ${account.name} error: ${err.message}. Trying next account...`);
+      }
     }
   }
 
