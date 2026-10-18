@@ -212,9 +212,14 @@ async function run({ language, code, stdin = '' }) {
     }
   }
 
+  const isTimeout = lastError?.message?.includes('timeout') || lastError?.message?.includes('Timeout');
+  const userFriendlyError = isTimeout
+    ? 'Execution timed out. If your code uses interactive input (cin, scanf, input(), etc.), remember that JDoodle requires all input to be pre-entered in the "INPUT (STDIN)" box before clicking Run.'
+    : `Execution API error after trying available accounts: ${lastError.message}`;
+
   return { 
     output: '', 
-    error: `Execution API error after trying available accounts: ${lastError.message}`, 
+    error: userFriendlyError, 
     compilerMessage: '', 
     exitCode: null, 
     signal: null 

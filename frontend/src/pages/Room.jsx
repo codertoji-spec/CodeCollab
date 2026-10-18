@@ -587,11 +587,16 @@ export default function Room() {
             <div className="border-t border-dark-600 bg-dark-800 flex-shrink-0">
               <div className="flex items-center justify-between px-4 py-1.5 border-b border-dark-700">
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Input (stdin)</span>
+                {!stdin && (
+                  <span className="text-[11px] text-yellow-500/80">
+                    Required for programs with cin / scanf / input()
+                  </span>
+                )}
               </div>
               <textarea
                 value={stdin}
                 onChange={e => setStdin(e.target.value)}
-                placeholder="Enter input here..."
+                placeholder="Enter input here before clicking Run (e.g. 1011)..."
                 className="w-full bg-transparent px-4 py-2 font-mono text-xs text-slate-200 resize-none focus:outline-none placeholder-slate-600"
                 rows={3}
               />
