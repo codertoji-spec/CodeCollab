@@ -261,9 +261,6 @@ export default function Room() {
         setRole(serverRole)
         roleRef.current = serverRole
         isEditorRef.current = serverRole === 'editor'
-        if (serverRole === 'editor' && ytext.length === 0) {
-          ydoc.transact(() => ytext.insert(0, DEFAULT_CODE[languageRef.current] || ''), 'remote-init-skip')
-        }
       }
       setUsers(serverUsers || [])
     })
