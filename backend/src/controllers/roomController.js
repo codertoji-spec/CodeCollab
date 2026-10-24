@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
+const yjsManager = require('../services/yjsManager');
 
 const SNAPSHOT_LIMIT = 100; // max snapshots per room
 
@@ -125,6 +126,10 @@ const saveSnapshot = async (req, res) => {
     );
 
     await client.query('COMMIT');
+
+    // Flush current Yjs state to database alongside manual snapshot
+    await yjsManager.persistDoc(roomId).catch(err => console.error('[SaveSnapshot] Persist error:', err.message));
+
     res.json({
       message: 'Snapshot saved',
       snapshot: result.rows[0],

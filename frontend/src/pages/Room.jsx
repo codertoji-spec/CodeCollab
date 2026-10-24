@@ -62,8 +62,16 @@ export default function Room() {
 
   const initialState = location.state || {}
   const [room] = useState(initialState.room || { id: roomId, name: 'Room', language: 'javascript' })
-  const [role, setRole] = useState(initialState.role || 'viewer')
+  const isCreator = Boolean(user?.id && room?.created_by && user.id === room.created_by)
+  const initialRole = initialState.role || (isCreator ? 'editor' : 'viewer')
+  const [role, setRole] = useState(initialRole)
   const isEditor = role === 'editor'
+
+  const isEditorRef = useRef(isEditor)
+  isEditorRef.current = isEditor
+  const roleRef = useRef(role)
+  roleRef.current = role
+  const languageRef = useRef(room.language || 'javascript')
 
   usePageMeta({
     title: `${room.name || 'Code Room'} — ${isEditor ? 'Editor' : 'Viewer'}`,
@@ -204,7 +212,7 @@ export default function Room() {
 
     ydoc.on('update', (update, origin) => {
       if (origin === 'remote') return
-      if (!isEditor) return
+      if (!isEditorRef.current) return
       socket.emit('yjs-update', { roomId, update })
     })
 
@@ -212,7 +220,7 @@ export default function Room() {
     socket.on('connect', () => {
       setSocketError(null)
       // Only send role — server derives userId/username from JWT
-      socket.emit('join-room', { roomId, role, language })
+      socket.emit('join-room', { roomId, role: roleRef.current, language: languageRef.current })
     })
 
     const toUint8 = (data) => {
@@ -227,8 +235,8 @@ export default function Room() {
       const bytes = toUint8(state)
       if (bytes.length > 0) Y.applyUpdate(ydoc, bytes, 'remote')
 
-      if (isEditor && ytext.length === 0) {
-        ydoc.transact(() => ytext.insert(0, DEFAULT_CODE[language] || ''), 'remote-init-skip')
+      if (isEditorRef.current && ytext.length === 0) {
+        ydoc.transact(() => ytext.insert(0, DEFAULT_CODE[languageRef.current] || ''), 'remote-init-skip')
       }
 
       if (editorRef.current) {
@@ -245,8 +253,18 @@ export default function Room() {
     })
 
     socket.on('room-state', ({ language: serverLang, users: serverUsers, role: serverRole }) => {
-      if (serverLang) setLanguage(serverLang)
-      if (serverRole) setRole(serverRole)
+      if (serverLang) {
+        setLanguage(serverLang)
+        languageRef.current = serverLang
+      }
+      if (serverRole) {
+        setRole(serverRole)
+        roleRef.current = serverRole
+        isEditorRef.current = serverRole === 'editor'
+        if (serverRole === 'editor' && ytext.length === 0) {
+          ydoc.transact(() => ytext.insert(0, DEFAULT_CODE[languageRef.current] || ''), 'remote-init-skip')
+        }
+      }
       setUsers(serverUsers || [])
     })
 
@@ -254,7 +272,10 @@ export default function Room() {
       setSocketError(message || 'Access denied to room.')
     })
 
-    socket.on('language-update', ({ language: newLang }) => setLanguage(newLang))
+    socket.on('language-update', ({ language: newLang }) => {
+      setLanguage(newLang)
+      languageRef.current = newLang
+    })
     socket.on('users-update', (updatedUsers) => setUsers(updatedUsers))
 
     socket.on('user-joined', ({ username: joinedName }) => {
@@ -294,7 +315,16 @@ export default function Room() {
       updateCursor(socketId, cursorUser, position, selection)
     })
 
+    const handleLeave = () => {
+      if (socketRef.current?.connected) {
+        socketRef.current.emit('leave-room', { roomId })
+      }
+    }
+    window.addEventListener('beforeunload', handleLeave)
+
     return () => {
+      window.removeEventListener('beforeunload', handleLeave)
+      handleLeave()
       yjsBindingRef.current?.destroy()
       yjsBindingRef.current = null
       ydoc.destroy()
@@ -359,6 +389,7 @@ export default function Room() {
     }
 
     setLanguage(newLang)
+    languageRef.current = newLang
     setYjsCode(DEFAULT_CODE[newLang] || '')
     socketRef.current?.emit('language-change', { roomId, language: newLang })
   }
@@ -418,7 +449,12 @@ export default function Room() {
       <div className="flex items-center justify-between px-4 py-2.5 glass-nav flex-shrink-0 relative z-50">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => {
+              if (socketRef.current?.connected) {
+                socketRef.current.emit('leave-room', { roomId })
+              }
+              navigate('/dashboard')
+            }}
             aria-label="Back to dashboard"
             className="text-slate-500 hover:text-slate-200 text-sm transition-colors"
           >

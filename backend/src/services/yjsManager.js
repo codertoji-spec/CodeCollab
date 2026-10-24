@@ -104,6 +104,10 @@ class YjsManager {
 
   /** Flush a single room's state to PostgreSQL immediately. */
   async persistDoc(roomId) {
+    if (this.saveTimers.has(roomId)) {
+      clearTimeout(this.saveTimers.get(roomId));
+      this.saveTimers.delete(roomId);
+    }
     const doc = this.docs.get(roomId);
     if (!doc) return;
     const state = Buffer.from(Y.encodeStateAsUpdate(doc));

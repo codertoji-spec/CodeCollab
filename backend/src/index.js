@@ -218,9 +218,17 @@ io.on('connection', (socket) => {
         const oldMeta = roomMeta[oldRoomId];
         if (oldMeta) {
           oldMeta.users.delete(socket.id);
+          yjsManager.persistDoc(oldRoomId).catch(() => {});
           if (oldMeta.users.size === 0) {
             clearAutoSnapshot(oldRoomId);
-            yjsManager.persistDoc(oldRoomId).finally(() => { delete roomMeta[oldRoomId]; });
+            const code = yjsManager.getText(oldRoomId);
+            if (code && code.trim()) {
+              pool.query(
+                'INSERT INTO code_snapshots (room_id, code, label, saved_by) VALUES ($1, $2, $3, $4)',
+                [oldRoomId, code, 'Auto-save on exit', userId]
+              ).catch(err => console.error('[AutoSnapshot on exit] Error:', err.message));
+            }
+            delete roomMeta[oldRoomId];
           } else {
             io.to(oldRoomId).emit('users-update', Array.from(oldMeta.users.values()));
             io.to(oldRoomId).emit('user-left', { socketId: socket.id, username });
@@ -368,16 +376,62 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('execution-result', safeResult);
   });
 
-  socket.on('disconnect', () => {
+  socket.on('leave-room', async ({ roomId } = {}) => {
+    if (!roomId || !socket.data?.roomId || socket.data.roomId !== roomId) return;
+    const meta = roomMeta[roomId];
+    if (meta) {
+      meta.users.delete(socket.id);
+      try {
+        await yjsManager.persistDoc(roomId);
+      } catch (err) {
+        console.error(`[leave-room] Persist error for room ${roomId}:`, err.message);
+      }
+
+      if (meta.users.size === 0) {
+        clearAutoSnapshot(roomId);
+        const code = yjsManager.getText(roomId);
+        if (code && code.trim()) {
+          pool.query(
+            'INSERT INTO code_snapshots (room_id, code, label, saved_by) VALUES ($1, $2, $3, $4)',
+            [roomId, code, 'Auto-save on exit', userId]
+          ).catch(err => console.error('[AutoSnapshot on exit] Error:', err.message));
+        }
+        delete roomMeta[roomId];
+      } else {
+        io.to(roomId).emit('users-update', Array.from(meta.users.values()));
+        io.to(roomId).emit('user-left', { socketId: socket.id, username });
+        io.to(roomId).emit('cursor-remove', { socketId: socket.id });
+      }
+    }
+    socket.leave(roomId);
+    socket.data.roomId = null;
+  });
+
+  socket.on('disconnect', async () => {
     clearSocketRateLimits(socket.id);
     const { roomId } = socket.data || {};
     if (!roomId) return;
     const meta = roomMeta[roomId];
     if (meta) {
       meta.users.delete(socket.id);
+
+      // Always persist state to DB immediately on disconnect
+      try {
+        await yjsManager.persistDoc(roomId);
+      } catch (err) {
+        console.error(`[Socket disconnect] Persist error for room ${roomId}:`, err.message);
+      }
+
       if (meta.users.size === 0) {
         clearAutoSnapshot(roomId);
-        yjsManager.persistDoc(roomId).finally(() => { delete roomMeta[roomId]; });
+        const code = yjsManager.getText(roomId);
+        if (code && code.trim()) {
+          pool.query(
+            'INSERT INTO code_snapshots (room_id, code, label, saved_by) VALUES ($1, $2, $3, $4)',
+            [roomId, code, 'Auto-save on exit', userId]
+          ).catch(err => console.error('[AutoSnapshot on exit] Error:', err.message));
+        }
+        delete roomMeta[roomId];
       } else {
         io.to(roomId).emit('users-update', Array.from(meta.users.values()));
         io.to(roomId).emit('user-left', { socketId: socket.id, username });
