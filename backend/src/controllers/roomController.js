@@ -165,6 +165,37 @@ const getSnapshots = async (req, res) => {
   }
 };
 
+const renameRoom = async (req, res) => {
+  const { roomId } = req.params;
+  const { name } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Room name is required' });
+  }
+
+  const trimmedName = name.trim();
+  if (trimmedName.length > 100) {
+    return res.status(400).json({ error: 'Room name cannot exceed 100 characters' });
+  }
+
+  try {
+    const isCreator = await pool.query('SELECT id FROM rooms WHERE id = $1 AND created_by = $2', [roomId, req.user.id]);
+    if (isCreator.rows.length === 0) {
+      return res.status(403).json({ error: 'Only the room creator can rename this room' });
+    }
+
+    const result = await pool.query(
+      'UPDATE rooms SET name = $1 WHERE id = $2 RETURNING *',
+      [trimmedName, roomId]
+    );
+
+    res.json({ message: 'Room renamed successfully', room: result.rows[0] });
+  } catch (err) {
+    console.error('Rename room error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 const deleteRoom = async (req, res) => {
   const { roomId } = req.params;
   try {
@@ -183,4 +214,4 @@ const deleteRoom = async (req, res) => {
   }
 };
 
-module.exports = { createRoom, joinRoom, listRooms, saveSnapshot, getSnapshots, deleteRoom };
+module.exports = { createRoom, joinRoom, listRooms, saveSnapshot, getSnapshots, renameRoom, deleteRoom };

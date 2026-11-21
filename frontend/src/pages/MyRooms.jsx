@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import ShinyText from '../components/ShinyText'
 import WarpText from '../components/WarpText'
 import GooeyNav from '../components/GooeyNav'
-import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiTerminal } from 'react-icons/fi'
+import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiTerminal, FiEdit2 } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
 import { getLangDisplay } from '../utils/languages'
@@ -33,6 +33,10 @@ export default function MyRooms() {
   const [shareModal, setShareModal] = useState(null)
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const [renameModal, setRenameModal] = useState(null) // room object
+  const [renameName, setRenameName] = useState('')
+  const [renameLoading, setRenameLoading] = useState(false)
+  const [renameError, setRenameError] = useState('')
 
   useEffect(() => {
     fetchRooms()
@@ -56,6 +60,33 @@ export default function MyRooms() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
+  }
+
+  const openRenameModal = (room) => {
+    setRenameModal(room)
+    setRenameName(room.name)
+    setRenameError('')
+    setActiveDropdown(null)
+  }
+
+  const handleRenameSubmit = async (e) => {
+    e.preventDefault()
+    if (!renameName.trim()) {
+      setRenameError('Room name is required')
+      return
+    }
+    setRenameLoading(true)
+    setRenameError('')
+    try {
+      const res = await axios.patch(`${API}/rooms/${renameModal.id}`, { name: renameName.trim() }, authHeader())
+      const updatedRoom = res.data.room
+      setRooms(rooms.map(r => r.id === renameModal.id ? { ...r, name: updatedRoom.name } : r))
+      setRenameModal(null)
+    } catch (err) {
+      setRenameError(err.response?.data?.error || 'Failed to rename room')
+    } finally {
+      setRenameLoading(false)
+    }
   }
 
   const handleDeleteRoom = async (roomId) => {
@@ -184,6 +215,13 @@ export default function MyRooms() {
                         
                         {activeDropdown === room.id && (
                           <div className="absolute right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-10 animate-in fade-in zoom-in-95 duration-100">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); openRenameModal(room); }}
+                              className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
+                            >
+                              <FiEdit2 className="w-4 h-4 text-purple-400" />
+                              Rename Room
+                            </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); setShareModal(room); setActiveDropdown(null); }}
                               className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
@@ -327,6 +365,83 @@ export default function MyRooms() {
             >
               Enter Workspace →
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Glassmorphic Rename Modal */}
+      {renameModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
+          {/* Modal Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => !renameLoading && setRenameModal(null)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-md bg-[#0f0f13]/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] animate-in fade-in zoom-in-95 duration-200 mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                <FiEdit2 className="w-5 h-5 text-purple-400" />
+                Rename Room
+              </h3>
+              <button 
+                type="button"
+                aria-label="Close rename dialog"
+                disabled={renameLoading}
+                onClick={() => setRenameModal(null)} 
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRenameSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Room Name
+                </label>
+                <input
+                  type="text"
+                  maxLength={100}
+                  value={renameName}
+                  onChange={(e) => setRenameName(e.target.value)}
+                  placeholder="Enter workspace name..."
+                  autoFocus
+                  disabled={renameLoading}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/80 focus:ring-1 focus:ring-purple-500 transition-all text-sm"
+                />
+              </div>
+
+              {renameError && (
+                <p className="text-red-400 text-xs">{renameError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  disabled={renameLoading}
+                  onClick={() => setRenameModal(null)}
+                  className="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={renameLoading || !renameName.trim()}
+                  className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-purple-600/30 active:scale-95 flex items-center gap-2"
+                >
+                  {renameLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
