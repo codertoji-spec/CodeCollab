@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { SecretProvider, useSecret } from './context/SecretContext'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
@@ -24,6 +25,14 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" replace />
 }
 
+const SecretRoomRoute = ({ children }) => {
+  const { isUnlocked } = useSecret()
+  if (!isUnlocked) {
+    return <Navigate to="/dashboard" replace />
+  }
+  return children
+}
+
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth()
   if (loading) return null
@@ -33,20 +42,22 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-          <Route path="/setup-username" element={<SetupUsername />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/auth/google/success" element={<GoogleSuccess />} />
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/my-rooms" element={<PrivateRoute><MyRooms /></PrivateRoute>} />
-          <Route path="/room/:roomId" element={<PrivateRoute><Room /></PrivateRoute>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <SecretProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+            <Route path="/setup-username" element={<SetupUsername />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/auth/google/success" element={<GoogleSuccess />} />
+            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/my-rooms" element={<PrivateRoute><SecretRoomRoute><MyRooms /></SecretRoomRoute></PrivateRoute>} />
+            <Route path="/room/:roomId" element={<PrivateRoute><Room /></PrivateRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </SecretProvider>
     </AuthProvider>
   )
 }
