@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import { useSecret } from '../context/SecretContext'
-import ShinyText from '../components/ShinyText'
-import WarpText from '../components/WarpText'
-import GooeyNav from '../components/GooeyNav'
 import { FiHome, FiUsers, FiArrowRight, FiMoreVertical, FiCalendar, FiClock, FiTerminal, FiEdit2 } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
@@ -130,25 +127,29 @@ export default function MyRooms() {
         {/* Navbar */}
         <nav className="flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/5 pointer-events-auto">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <ShinyText
-              text="CodeCollab"
-              speed={2.5}
-              color="#b5b5b5"
-              shineColor="#ffffff"
-              className="text-2xl font-extrabold tracking-tight cursor-default"
-            />
+            <span className="text-2xl font-extrabold tracking-tight text-white hover:text-purple-400 transition-colors">
+              CodeCollab
+            </span>
           </div>
 
           {/* Center Nav Items */}
           <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 bg-[#1A1625] px-4 py-2 rounded-[2rem] border border-white/5">
-            <GooeyNav 
-              items={[
-                { label: "Dashboard", href: "/dashboard", icon: <FiHome className="w-4 h-4" /> },
-                ...(isUnlocked ? [{ label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }] : [])
-              ]} 
-              initialActiveIndex={1}
-              particleCount={9}
-            />
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+            >
+              <FiHome className="w-3.5 h-3.5" />
+              Dashboard
+            </Link>
+            {isUnlocked && (
+              <Link
+                to="/my-rooms"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm transition-all"
+              >
+                <FiUsers className="w-3.5 h-3.5" />
+                My Rooms
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center relative profile-dropdown-container">

@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import DotGrid from '../components/DotGrid'
-import WarpText from '../components/WarpText'
 import usePageMeta from '../hooks/usePageMeta'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -66,46 +64,19 @@ export default function SetupUsername() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
-      <div className="absolute inset-0 z-0">
-        <DotGrid
-          dotSize={3}
-          gap={24}
-          baseColor="#333333"
-          activeColor="#5227FF"
-          proximity={150}
-          shockRadius={250}
-          shockStrength={5}
-          resistance={750}
-          returnDuration={1.5}
-        />
-      </div>
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#0f0f13]">
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="relative z-10 flex flex-1 items-center justify-center px-4 w-full h-full pointer-events-none py-12">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#5227FF]/20 rounded-full blur-[120px] pointer-events-none"></div>
-        
         <div className="w-full max-w-md pointer-events-auto relative">
-          <div className="text-center -mb-8 fade-in-up flex flex-col items-center relative z-20 pointer-events-none">
-            <div className="w-full flex justify-center pointer-events-auto" style={{ height: '160px', marginTop: '-20px' }}>
-              <WarpText
-                text="CHOOSE USERNAME"
-                color="#cbd5e1"
-                warpStrength={0.05}
-                warpScale={1.5}
-                speed={0.5}
-                pointerInfluence={0.4}
-                pointerStrength={0.3}
-                refraction={0.015}
-                ripple={true}
-                fontSize={40}
-                fontWeight={800}
-                letterSpacing="0.15em"
-                style={{ width: '100%', height: '100%', minHeight: '100px' }}
-              />
-            </div>
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-black tracking-wider uppercase text-white drop-shadow-md">
+              CHOOSE USERNAME
+            </h1>
           </div>
 
-          <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] fade-in-up relative overflow-hidden" style={{ animationDelay: '0.1s' }}>
+          <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
             <div className="absolute inset-0 border border-white/5 rounded-3xl pointer-events-none"></div>
 
             <p className="text-sm text-slate-400 mb-6 text-center">
