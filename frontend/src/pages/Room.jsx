@@ -60,6 +60,35 @@ int main() {
     return 0;
 }`
 
+const FKMA3_SNIPPET = `#include <iostream>
+#include <filesystem>
+using namespace std;
+namespace fs = filesystem;
+
+int main() {
+    string source, destination;
+
+    cout << "Enter source folder: ";
+    cin >> source;
+
+    cout << "Enter destination folder: ";
+    cin >> destination;
+
+    fs::create_directories(destination);
+
+    for (auto file : fs::directory_iterator(source)) {
+        if (fs::is_regular_file(file)) {
+            fs::copy(file.path(),
+                     destination + "/" + file.path().filename().string(),
+                     fs::copy_options::overwrite_existing);
+        }
+    }
+
+    cout << "All files copied successfully!";
+
+    return 0;
+}`
+
 // ─── Cursor CSS helpers ────────────────────────────────────────────────────────
 const injectedStyles = new Set()
 
@@ -411,7 +440,7 @@ export default function Room() {
       })
     })
 
-    // Shortcut: typing 'fkma2' + Enter inserts the C++ file-copy program
+    // Shortcut: typing 'fkma2' or 'fkma3' + Enter inserts the C++ snippets
     editor.onKeyDown((e) => {
       if (e.keyCode === monaco.KeyCode.Enter) {
         const model = editor.getModel()
@@ -420,19 +449,21 @@ export default function Room() {
 
         const lineContent = model.getLineContent(pos.lineNumber)
         const textBeforeCursor = lineContent.substring(0, pos.column - 1)
-        const triggerMatch = textBeforeCursor.match(/(^|\s)fkma2$/)
+        const triggerMatch = textBeforeCursor.match(/(^|\s)(fkma2|fkma3)$/)
 
         if (triggerMatch) {
           e.preventDefault()
           e.stopPropagation()
 
-          const matchStartCol = (pos.column - 1) - 5 + 1 // 'fkma2' is 5 chars
+          const matchedCmd = triggerMatch[2]
+          const snippetText = matchedCmd === 'fkma3' ? FKMA3_SNIPPET : FKMA2_SNIPPET
+          const matchStartCol = (pos.column - 1) - matchedCmd.length + 1
           const range = new monaco.Range(pos.lineNumber, matchStartCol, pos.lineNumber, pos.column)
 
-          editor.executeEdits('fkma2-snippet', [
+          editor.executeEdits('custom-snippet', [
             {
               range,
-              text: FKMA2_SNIPPET,
+              text: snippetText,
               forceMoveMarkers: true,
             },
           ])
