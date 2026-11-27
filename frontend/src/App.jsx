@@ -1,32 +1,27 @@
-import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SecretProvider, useSecret } from './context/SecretContext'
-
-// Route-level code splitting: download page bundles only when accessed
-const Landing = lazy(() => import('./pages/Landing'))
-const Login = lazy(() => import('./pages/Login'))
-const ResetPassword = lazy(() => import('./pages/ResetPassword'))
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const MyRooms = lazy(() => import('./pages/MyRooms'))
-const Room = lazy(() => import('./pages/Room'))
-const GoogleSuccess = lazy(() => import('./pages/GoogleSuccess'))
-const SetupUsername = lazy(() => import('./pages/SetupUsername'))
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
-const NotFound = lazy(() => import('./pages/NotFound'))
-
-const PageLoader = () => (
-  <div className="min-h-screen bg-[#0f0f13] flex items-center justify-center">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-      <span className="text-slate-400 font-mono text-xs tracking-wider uppercase">Loading...</span>
-    </div>
-  </div>
-)
+import Login from './pages/Login'
+import ResetPassword from './pages/ResetPassword'
+import Dashboard from './pages/Dashboard'
+import MyRooms from './pages/MyRooms'
+import Room from './pages/Room'
+import GoogleSuccess from './pages/GoogleSuccess'
+import Landing from './pages/Landing'
+import SetupUsername from './pages/SetupUsername'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import NotFound from './pages/NotFound'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
-  if (loading) return <PageLoader />
+  if (loading) return (
+    <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-2 border-accent-primary border-t-transparent rounded-full animate-spin" />
+        <span className="text-slate-400 font-mono text-sm">Loading CodeCollab...</span>
+      </div>
+    </div>
+  )
   return user ? children : <Navigate to="/login" replace />
 }
 
@@ -49,20 +44,18 @@ function App() {
     <AuthProvider>
       <SecretProvider>
         <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-              <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-              <Route path="/setup-username" element={<SetupUsername />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/auth/google/success" element={<GoogleSuccess />} />
-              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-              <Route path="/my-rooms" element={<PrivateRoute><SecretRoomRoute><MyRooms /></SecretRoomRoute></PrivateRoute>} />
-              <Route path="/room/:roomId" element={<PrivateRoute><Room /></PrivateRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+            <Route path="/setup-username" element={<SetupUsername />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/auth/google/success" element={<GoogleSuccess />} />
+            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/my-rooms" element={<PrivateRoute><SecretRoomRoute><MyRooms /></SecretRoomRoute></PrivateRoute>} />
+            <Route path="/room/:roomId" element={<PrivateRoute><Room /></PrivateRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </SecretProvider>
     </AuthProvider>

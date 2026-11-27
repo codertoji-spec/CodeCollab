@@ -3,7 +3,12 @@ import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import { useSecret } from '../context/SecretContext'
-import { FiHome, FiUsers, FiPlus, FiLogIn, FiArrowRight, FiShield, FiTerminal, FiMoreVertical, FiCalendar, FiClock, FiZap, FiCode, FiEdit2 } from 'react-icons/fi'
+import LiquidEther from '../components/LiquidEther'
+import WarpText from '../components/WarpText'
+import ShinyText from '../components/ShinyText'
+import Carousel from '../components/Carousel'
+import GooeyNav from '../components/GooeyNav'
+import { FiFileText, FiHome, FiUsers, FiGlobe, FiPlus, FiLogIn, FiArrowRight, FiShield, FiTerminal, FiMoreVertical, FiCalendar, FiClock, FiZap, FiCode, FiEdit2 } from 'react-icons/fi'
 import { formatUsername } from '../utils/format'
 import { LANG_COLORS, LANG_THEME, getLangIcon } from '../utils/icons'
 import { LANGUAGES, getLangDisplay, getLanguagesByCategory, CATEGORIES } from '../utils/languages'
@@ -155,11 +160,21 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#0f0f13] text-slate-100">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-black text-slate-100">
       
-      {/* Background Ambient Glow (Ultra-lightweight pure CSS, zero WebGL) */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+      {/* Background LiquidEther */}
+      <div className="absolute inset-0 z-0 opacity-80 pointer-events-auto">
+        <LiquidEther
+          colors={['#1e1b4b', '#4c1d95', '#3b0764']}
+          mouseForce={25}
+          cursorSize={150}
+          isViscous={true}
+          viscous={20}
+          autoDemo={true}
+          autoSpeed={0.4}
+          resolution={0.5}
+        />
+      </div>
 
       {/* Foreground Content */}
       <div className="relative z-10 flex flex-col h-full flex-1 pointer-events-none">
@@ -167,29 +182,27 @@ export default function Dashboard() {
         {/* Navbar */}
         <nav className="flex items-center justify-between px-6 py-4 bg-black/30 backdrop-blur-md border-b border-white/5 pointer-events-auto">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-2xl font-extrabold tracking-tight text-white hover:text-purple-400 transition-colors">
-              CodeCollab
+            <Link to="/">
+              <ShinyText
+                text="CodeCollab"
+                speed={2.5}
+                color="#b5b5b5"
+                shineColor="#ffffff"
+                className="text-2xl font-extrabold tracking-tight cursor-default hover:opacity-80 transition-opacity"
+              />
             </Link>
           </div>
 
           {/* Center Nav Items */}
           <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 bg-[#1A1625] px-4 py-2 rounded-[2rem] border border-white/5">
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm transition-all"
-            >
-              <FiHome className="w-3.5 h-3.5" />
-              Dashboard
-            </Link>
-            {isUnlocked && (
-              <Link
-                to="/my-rooms"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <FiUsers className="w-3.5 h-3.5" />
-                My Rooms
-              </Link>
-            )}
+            <GooeyNav 
+              items={[
+                { label: "Dashboard", href: "/dashboard", icon: <FiHome className="w-4 h-4" /> },
+                ...(isUnlocked ? [{ label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }] : [])
+              ]} 
+              initialActiveIndex={0}
+              particleCount={9}
+            />
           </div>
           <div className="flex items-center relative profile-dropdown-container">
             <button 
