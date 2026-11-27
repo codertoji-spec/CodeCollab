@@ -242,30 +242,35 @@ export default function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="flex-1 max-w-[1400px] mx-auto w-full px-6 py-12 pointer-events-auto flex flex-col items-start">
+          <div className="mb-12 text-left w-full">
+            <h1 className="text-4xl md:text-4xl font-extrabold tracking-tight mb-2 text-white drop-shadow-md">
+              Welcome back, {formatUsername(user?.username)}
+            </h1>
+            <p className="text-slate-400 text-lg">Create a workspace or continue coding with your team.</p>
+          </div>
+
           <div className={`w-full ${isUnlocked ? 'grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12' : 'flex flex-col items-center max-w-xl mx-auto'} items-start transition-all duration-300`}>
             
             {/* Left Column - Actions */}
             <div className={`${isUnlocked ? 'lg:col-span-4' : 'w-full'} flex flex-col gap-6`}>
               
-              {/* Tab Selector (Join option only when unlocked) */}
-              {isUnlocked && (
-                <div className="flex bg-[#121016] p-1.5 rounded-2xl shadow-inner border border-white/5">
-                  <button
-                    onClick={() => { setTab('create'); setError('') }}
-                    className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'create' ? 'bg-[#2D2342] text-[#A78BFA] shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    <FiPlus className="w-4 h-4" />
-                    Create Room
-                  </button>
-                  <button
-                    onClick={() => { setTab('join'); setError('') }}
-                    className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'join' ? 'bg-[#2D2342] text-[#A78BFA] shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    <FiLogIn className="w-4 h-4" />
-                    Join Room
-                  </button>
-                </div>
-              )}
+              {/* Tab Selector */}
+              <div className="flex bg-[#121016] p-1.5 rounded-2xl shadow-inner border border-white/5">
+                <button
+                  onClick={() => { setTab('create'); setError('') }}
+                  className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'create' ? 'bg-[#2D2342] text-[#A78BFA] shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                >
+                  <FiPlus className="w-4 h-4" />
+                  Create Room
+                </button>
+                <button
+                  onClick={() => { setTab('join'); setError('') }}
+                  className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 ${tab === 'join' ? 'bg-[#2D2342] text-[#A78BFA] shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                >
+                  <FiLogIn className="w-4 h-4" />
+                  Join Room
+                </button>
+              </div>
 
               {error && (
                 <div className="bg-red-500/10 backdrop-blur-md border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
@@ -277,8 +282,8 @@ export default function Dashboard() {
               )}
 
               {/* Action Card */}
-              <div className="bg-[#121016] border border-white/5 rounded-3xl p-8 shadow-2xl mt-2 w-full">
-                {(tab === 'create' || !isUnlocked) ? (
+              <div className="bg-[#121016] border border-white/5 rounded-3xl p-8 shadow-2xl mt-2">
+                {tab === 'create' ? (
                   <form onSubmit={handleCreate} className="space-y-5">
                     <div>
                       <label className="block text-slate-300 text-sm font-semibold mb-2">Room Name</label>
@@ -352,7 +357,7 @@ export default function Dashboard() {
                     </button>
                     <div className="flex items-center justify-center gap-2 mt-4 text-slate-500 text-xs">
                       <FiShield className="w-3.5 h-3.5" />
-                      Collaborate and code in real-time.
+                      Your code. In real time. Together.
                     </div>
                   </form>
                 ) : (
@@ -375,7 +380,7 @@ export default function Dashboard() {
                     </button>
                     <div className="flex items-center justify-center gap-2 mt-4 text-slate-500 text-xs">
                       <FiShield className="w-3.5 h-3.5" />
-                      Collaborate and code securely.
+                      Collaborate securely with your team.
                     </div>
                   </form>
                 )}
