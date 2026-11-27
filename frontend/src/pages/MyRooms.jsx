@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
-import { useSecret } from '../context/SecretContext'
 import ShinyText from '../components/ShinyText'
 import WarpText from '../components/WarpText'
 import GooeyNav from '../components/GooeyNav'
@@ -21,14 +20,7 @@ const authHeader = () => ({
 
 export default function MyRooms() {
   const { user, logout } = useAuth()
-  const { isUnlocked } = useSecret()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    if (!isUnlocked) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [isUnlocked, navigate])
 
   usePageMeta({
     title: 'My Workspaces',
@@ -144,7 +136,7 @@ export default function MyRooms() {
             <GooeyNav 
               items={[
                 { label: "Dashboard", href: "/dashboard", icon: <FiHome className="w-4 h-4" /> },
-                ...(isUnlocked ? [{ label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }] : [])
+                { label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }
               ]} 
               initialActiveIndex={1}
               particleCount={9}

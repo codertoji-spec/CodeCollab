@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
-import { useSecret } from '../context/SecretContext'
 import LiquidEther from '../components/LiquidEther'
 import WarpText from '../components/WarpText'
 import ShinyText from '../components/ShinyText'
@@ -22,7 +21,6 @@ const authHeader = () => ({
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
-  const { isUnlocked, checkCode } = useSecret()
   const navigate = useNavigate()
 
   usePageMeta({
@@ -55,13 +53,6 @@ export default function Dashboard() {
   const handleCreate = async (e) => {
     e.preventDefault()
     setError('')
-
-    // Check if the secret code was entered in room name
-    if (checkCode(createForm.name)) {
-      setCreateForm(f => ({ ...f, name: '' }))
-      return
-    }
-
     setLoading(true)
     try {
       const res = await axios.post(`${API}/rooms/create`, createForm, authHeader())
@@ -78,13 +69,6 @@ export default function Dashboard() {
   const handleJoin = async (e) => {
     e.preventDefault()
     setError('')
-
-    // Check if the secret code was entered in join code
-    if (checkCode(joinCode)) {
-      setJoinCode('')
-      return
-    }
-
     setLoading(true)
     try {
       const res = await axios.post(`${API}/rooms/join`, { code: joinCode }, authHeader())
@@ -198,7 +182,7 @@ export default function Dashboard() {
             <GooeyNav 
               items={[
                 { label: "Dashboard", href: "/dashboard", icon: <FiHome className="w-4 h-4" /> },
-                ...(isUnlocked ? [{ label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }] : [])
+                { label: "My Rooms", href: "/my-rooms", icon: <FiUsers className="w-4 h-4" /> }
               ]} 
               initialActiveIndex={0}
               particleCount={9}
@@ -249,10 +233,10 @@ export default function Dashboard() {
             <p className="text-slate-400 text-lg">Create a workspace or continue coding with your team.</p>
           </div>
 
-          <div className={`w-full ${isUnlocked ? 'grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12' : 'flex flex-col items-center max-w-xl mx-auto'} items-start transition-all duration-300`}>
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             
             {/* Left Column - Actions */}
-            <div className={`${isUnlocked ? 'lg:col-span-4' : 'w-full'} flex flex-col gap-6`}>
+            <div className="lg:col-span-4 flex flex-col gap-6">
               
               {/* Tab Selector */}
               <div className="flex bg-[#121016] p-1.5 rounded-2xl shadow-inner border border-white/5">
@@ -387,98 +371,96 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Right Column - Recent Rooms Cards (Only visible when unlocked) */}
-            {isUnlocked && (
-              <div className="lg:col-span-8 flex flex-col w-full h-full animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">Recent Rooms</h2>
-                  <button onClick={() => navigate('/my-rooms')} className="text-sm font-semibold text-[#A78BFA] hover:text-[#C4B5FD] flex items-center gap-1 transition-colors">
-                    View all <FiArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
+            {/* Right Column - Recent Rooms Cards */}
+            <div className="lg:col-span-8 flex flex-col w-full h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Recent Rooms</h2>
+                <button onClick={() => navigate('/my-rooms')} className="text-sm font-semibold text-[#A78BFA] hover:text-[#C4B5FD] flex items-center gap-1 transition-colors">
+                  View all <FiArrowRight className="w-4 h-4" />
+                </button>
+              </div>
 
-                {rooms.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {rooms.slice(0, 3).map(room => {
-                      const theme = LANG_THEME[room.language] || { bg: 'bg-slate-500/10', text: 'text-slate-400' };
-                      return (
-                      <div key={room.id} className="bg-[#121016] border border-white/5 rounded-3xl p-6 flex flex-col hover:border-white/10 transition-colors shadow-xl w-full">
-                        
-                        <div className="flex items-start justify-between mb-8">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
-                            {getLangIcon(room.language, "w-6 h-6")}
-                          </div>
-                          <div className="relative">
-                            <button 
-                              className="text-slate-500 hover:text-white transition-colors mt-1" 
-                              onClick={e => { e.stopPropagation(); setActiveDropdown(activeDropdown === room.id ? null : room.id); }}
-                            >
-                              <FiMoreVertical className="w-5 h-5" />
-                            </button>
-                            
-                            {activeDropdown === room.id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-10 animate-in fade-in zoom-in-95 duration-100">
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); openRenameModal(room); }}
-                                  className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
-                                >
-                                  <FiEdit2 className="w-4 h-4 text-purple-400" />
-                                  Rename Room
-                                </button>
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); setShareModal(room); setActiveDropdown(null); }}
-                                  className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
-                                >
-                                  Share Workspace
-                                </button>
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id); }}
-                                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
-                                >
-                                  Delete Room
-                                </button>
-                              </div>
-                            )}
-                          </div>
+              {rooms.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {rooms.slice(0, 3).map(room => {
+                    const theme = LANG_THEME[room.language] || { bg: 'bg-slate-500/10', text: 'text-slate-400' };
+                    return (
+                    <div key={room.id} className="bg-[#121016] border border-white/5 rounded-3xl p-6 flex flex-col hover:border-white/10 transition-colors shadow-xl w-full">
+                      
+                      <div className="flex items-start justify-between mb-8">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.bg} ${theme.text}`}>
+                          {getLangIcon(room.language, "w-6 h-6")}
                         </div>
-
-                        <div className="mb-8">
-                          <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
-                          <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
-                            {getLangDisplay(room.language)}
-                          </div>
-                        </div>
-
-                        <div className="mt-auto">
-                          <div className="flex items-center gap-5 text-xs text-slate-500 font-medium mb-6">
-                            <div className="flex items-center gap-2">
-                              <FiCalendar className="w-4 h-4" />
-                              {new Date(room.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <FiClock className="w-4 h-4" />
-                              {new Date(room.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-                            </div>
-                          </div>
-
-                          <button onClick={() => enterRoom(room)} className="w-full py-3.5 bg-[#1a1a24] hover:bg-[#22222e] text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 transition-colors border border-white/5">
-                            Open Room <FiArrowRight className="w-4 h-4 text-[#A78BFA]" />
+                        <div className="relative">
+                          <button 
+                            className="text-slate-500 hover:text-white transition-colors mt-1" 
+                            onClick={e => { e.stopPropagation(); setActiveDropdown(activeDropdown === room.id ? null : room.id); }}
+                          >
+                            <FiMoreVertical className="w-5 h-5" />
                           </button>
+                          
+                          {activeDropdown === room.id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-[#1A1625] border border-white/10 rounded-xl shadow-2xl py-1 z-10 animate-in fade-in zoom-in-95 duration-100">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); openRenameModal(room); }}
+                                className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
+                              >
+                                <FiEdit2 className="w-4 h-4 text-purple-400" />
+                                Rename Room
+                              </button>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setShareModal(room); setActiveDropdown(null); }}
+                                className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                              >
+                                Share Workspace
+                              </button>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id); }}
+                                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
+                              >
+                                Delete Room
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )})}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] bg-[#121016] border border-white/5 rounded-3xl p-12">
-                    <div className="w-16 h-16 bg-[#2D2342] rounded-full flex items-center justify-center mb-4 text-[#A78BFA]">
-                      <FiTerminal className="w-8 h-8" />
+
+                      <div className="mb-8">
+                        <h3 className="font-bold text-xl text-white truncate mb-4">{room.name}</h3>
+                        <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold ${theme.bg} ${theme.text}`}>
+                          {getLangDisplay(room.language)}
+                        </div>
+                      </div>
+
+                      <div className="mt-auto">
+                        <div className="flex items-center gap-5 text-xs text-slate-500 font-medium mb-6">
+                          <div className="flex items-center gap-2">
+                            <FiCalendar className="w-4 h-4" />
+                            {new Date(room.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FiClock className="w-4 h-4" />
+                            {new Date(room.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                          </div>
+                        </div>
+
+                        <button onClick={() => enterRoom(room)} className="w-full py-3.5 bg-[#1a1a24] hover:bg-[#22222e] text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 transition-colors border border-white/5">
+                          Open Room <FiArrowRight className="w-4 h-4 text-[#A78BFA]" />
+                        </button>
+                      </div>
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">No active workspaces</h3>
-                    <p className="text-slate-400 text-sm max-w-xs text-center">Create your first room on the left to start collaborating in real-time.</p>
+                  )})}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full min-h-[300px] bg-[#121016] border border-white/5 rounded-3xl p-12">
+                  <div className="w-16 h-16 bg-[#2D2342] rounded-full flex items-center justify-center mb-4 text-[#A78BFA]">
+                    <FiTerminal className="w-8 h-8" />
                   </div>
-                )}
-              </div>
-            )}
+                  <h3 className="text-lg font-semibold text-white mb-2">No active workspaces</h3>
+                  <p className="text-slate-400 text-sm max-w-xs text-center">Create your first room on the left to start collaborating in real-time.</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Pro Tip Banner */}
