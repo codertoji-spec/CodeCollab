@@ -1,17 +1,20 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const SecretContext = createContext();
 
 const SECRET_CODE = 'wasd123';
+const STORAGE_KEY = 'cc_secret_unlocked';
 
 export function SecretProvider({ children }) {
-  // In-memory only state: locks immediately whenever the page/site is reloaded
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    return sessionStorage.getItem(STORAGE_KEY) === 'true';
+  });
 
   const checkCode = (input) => {
     if (!input) return false;
     if (input.trim() === SECRET_CODE) {
       setIsUnlocked(true);
+      sessionStorage.setItem(STORAGE_KEY, 'true');
       return true;
     }
     return false;
@@ -19,10 +22,12 @@ export function SecretProvider({ children }) {
 
   const lock = () => {
     setIsUnlocked(false);
+    sessionStorage.removeItem(STORAGE_KEY);
   };
 
   const unlock = () => {
     setIsUnlocked(true);
+    sessionStorage.setItem(STORAGE_KEY, 'true');
   };
 
   return (
@@ -35,4 +40,3 @@ export function SecretProvider({ children }) {
 export function useSecret() {
   return useContext(SecretContext);
 }
-
