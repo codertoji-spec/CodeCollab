@@ -10,7 +10,6 @@ import VersionHistory from '../components/VersionHistory'
 import { getLangIcon } from '../utils/icons'
 import { LANGUAGES, LANGUAGE_CONFIG, DEFAULT_CODE, getMonacoLang, getLangDisplay, getLanguagesByCategory, CATEGORIES } from '../utils/languages'
 import usePageMeta from '../hooks/usePageMeta'
-import { CN_SNIPPETS } from '../utils/cnSnippets'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
@@ -370,43 +369,6 @@ export default function Room() {
           endLineNumber: sel.endLineNumber, endColumn: sel.endColumn,
         },
       })
-    })
-
-    editor.onKeyDown((e) => {
-      if (e.keyCode === monaco.KeyCode.Enter) {
-        const model = editor.getModel()
-        const position = editor.getPosition()
-        if (!model || !position) return
-
-        const lineContent = model.getLineContent(position.lineNumber)
-        const textBeforeCursor = lineContent.substring(0, position.column - 1)
-        const match = textBeforeCursor.match(/(?:^|\s)(fkcn[0-9_]+)$/)
-
-        if (match) {
-          const trigger = match[1]
-          const snippet = CN_SNIPPETS[trigger]
-          if (snippet) {
-            e.preventDefault()
-            e.stopPropagation()
-
-            const startColumn = position.column - trigger.length
-            const range = new monaco.Range(
-              position.lineNumber,
-              startColumn,
-              position.lineNumber,
-              position.column
-            )
-
-            editor.executeEdits('cn-snippet', [
-              {
-                range,
-                text: snippet,
-                forceMoveMarkers: true,
-              },
-            ])
-          }
-        }
-      }
     })
   }, [roomId])
 
