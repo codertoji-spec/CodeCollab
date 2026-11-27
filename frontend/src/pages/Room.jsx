@@ -89,69 +89,6 @@ int main() {
     return 0;
 }`
 
-const FKMA4_SNIPPET = `#include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <winsock2.h>
-using namespace std;
-namespace fs = filesystem;
-
-int main() {
-    string folder = "C:/MA_lab/Source";
-
-    WSADATA wsa;
-    WSAStartup(MAKEWORD(2, 2), &wsa);
-
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-
-    sockaddr_in server{};
-    server.sin_family = AF_INET;
-    server.sin_port = htons(8080);
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-    if (connect(sock, (sockaddr*)&server, sizeof(server)) == SOCKET_ERROR) {
-        cout << "Connection failed!";
-        closesocket(sock);
-        WSACleanup();
-        return 1;
-    }
-
-    cout << "Connected to server!" << endl;
-
-    for (auto file : fs::directory_iterator(folder)) {
-        if (!fs::is_regular_file(file))
-            continue;
-
-        string name = file.path().filename().string();
-        ifstream fin(file.path(), ios::binary);
-
-        if (!fin) continue;
-
-        uint32_t len = name.size();
-        send(sock, (char*)&len, sizeof(len), 0);
-        send(sock, name.c_str(), len, 0);
-
-        char buffer[1024];
-
-        while (fin.read(buffer, sizeof(buffer)) || fin.gcount() > 0) {
-            send(sock, buffer, (int)fin.gcount(), 0);
-        }
-
-        cout << "Sent: " << name << endl;
-        fin.close();
-    }
-
-    uint32_t end = 0;
-    send(sock, (char*)&end, sizeof(end), 0);
-
-    closesocket(sock);
-    WSACleanup();
-
-    cout << "Transfer completed!";
-
-    return 0;
-}`
-
 // ─── Cursor CSS helpers ────────────────────────────────────────────────────────
 const injectedStyles = new Set()
 
@@ -512,19 +449,14 @@ export default function Room() {
 
         const lineContent = model.getLineContent(pos.lineNumber)
         const textBeforeCursor = lineContent.substring(0, pos.column - 1)
-        const triggerMatch = textBeforeCursor.match(/(^|\s)(fkma2|fkma3|fkma4)$/)
+        const triggerMatch = textBeforeCursor.match(/(^|\s)(fkma2|fkma3)$/)
 
         if (triggerMatch) {
           e.preventDefault()
           e.stopPropagation()
 
           const matchedCmd = triggerMatch[2]
-          const snippetMap = {
-            fkma2: FKMA2_SNIPPET,
-            fkma3: FKMA3_SNIPPET,
-            fkma4: FKMA4_SNIPPET,
-          }
-          const snippetText = snippetMap[matchedCmd] || FKMA2_SNIPPET
+          const snippetText = matchedCmd === 'fkma3' ? FKMA3_SNIPPET : FKMA2_SNIPPET
           const matchStartCol = (pos.column - 1) - matchedCmd.length + 1
           const range = new monaco.Range(pos.lineNumber, matchStartCol, pos.lineNumber, pos.column)
 
