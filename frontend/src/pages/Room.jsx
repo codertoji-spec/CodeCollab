@@ -20,46 +20,6 @@ const CURSOR_COLORS = [
 ]
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('cc_token')}` })
 
-const FKMA2_SNIPPET = `#include <iostream>
-#include <fstream>
-using namespace std;
-
-int main() {
-    string source, destination;
-
-    cout << "Enter source file name: ";
-    cin >> source;
-
-    cout << "Enter destination file name: ";
-    cin >> destination;
-
-    ifstream fin(source);
-    ofstream fout(destination);
-
-    if (!fin) {
-        cout << "Source file not found!";
-        return 1;
-    }
-
-    if (!fout) {
-        cout << "Unable to create destination file!";
-        return 1;
-    }
-
-    char ch;
-
-    while (fin.get(ch)) {
-        fout.put(ch);
-    }
-
-    fin.close();
-    fout.close();
-
-    cout << "File copied successfully!";
-
-    return 0;
-}`
-
 // ─── Cursor CSS helpers ────────────────────────────────────────────────────────
 const injectedStyles = new Set()
 
@@ -409,35 +369,6 @@ export default function Room() {
           endLineNumber: sel.endLineNumber, endColumn: sel.endColumn,
         },
       })
-    })
-
-    // Shortcut: typing 'fkma2' + Enter inserts the C++ file-copy program
-    editor.onKeyDown((e) => {
-      if (e.keyCode === monaco.KeyCode.Enter) {
-        const model = editor.getModel()
-        const pos = editor.getPosition()
-        if (!model || !pos) return
-
-        const lineContent = model.getLineContent(pos.lineNumber)
-        const textBeforeCursor = lineContent.substring(0, pos.column - 1)
-        const triggerMatch = textBeforeCursor.match(/(^|\s)fkma2$/)
-
-        if (triggerMatch) {
-          e.preventDefault()
-          e.stopPropagation()
-
-          const matchStartCol = (pos.column - 1) - 5 + 1 // 'fkma2' is 5 chars
-          const range = new monaco.Range(pos.lineNumber, matchStartCol, pos.lineNumber, pos.column)
-
-          editor.executeEdits('fkma2-snippet', [
-            {
-              range,
-              text: FKMA2_SNIPPET,
-              forceMoveMarkers: true,
-            },
-          ])
-        }
-      }
     })
   }, [roomId])
 
